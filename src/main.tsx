@@ -9,6 +9,7 @@ import { WalletModalProvider, WalletDisconnectButton, WalletMultiButton } from '
 import { clusterApiUrl } from '@solana/web3.js'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import '@solana/wallet-adapter-react-ui/styles.css'
+import Profile from './pages/Profile'
 
 export const Wallet: FC = () => {
   const network = WalletAdapterNetwork.Devnet
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <Landing />,
+  },
+  {
+    path: '/:id',
+    element: <Profile />,
   },
 ])
 

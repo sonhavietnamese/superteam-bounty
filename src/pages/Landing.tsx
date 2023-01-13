@@ -1,13 +1,13 @@
 import React from 'react'
 import styled from 'styled-components'
 import Header from '../ui/Header'
-import RoleSwitcher from './RoleSwitcher'
+import RoleSwitcher from '../components/RoleSwitcher'
 import { ReactComponent as SearchIcon } from '../assets/search.svg'
 import { useLandingStore } from '../store/landing'
 
 //#region STYLES
 const LandingContainer = styled.div`
-  width: 100vw;
+  width: 100%;
 `
 
 const Left = styled.div`

@@ -8,13 +8,15 @@ const HeaderContainer = styled.div`
   width: 100vw;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
+  z-index: 99;
 `
 
 const LogoText = styled.span`
   font-size: 32px;
   font-family: 'Circular-B';
+  /* mix-blend-mode: difference; */
 `
 
 const NavigationContainer = styled.nav`
