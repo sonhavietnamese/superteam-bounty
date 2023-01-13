@@ -5,12 +5,12 @@
 
 @font-face {
   font-family: 'Circular-M';
-  src: url('fonts/Meidum.ttf') format('truetype');
+  src: url('fonts/Medium.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'Circular-M-I';
-  src: url('fonts/MeidumItalic.ttf') format('truetype');
+  src: url('fonts/MediumItalic.otf') format('otf');
 }
 
 :root {
@@ -28,6 +28,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  user-select: none;
 }
 
 * {

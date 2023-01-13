@@ -1,152 +1,199 @@
 import React from 'react'
 import styled from 'styled-components'
-// import { ReactComponent as HeroText } from '../assets/provider-hero-text.svg'
+import Header from '../ui/Header'
+import RoleSwitcher from './RoleSwitcher'
+import { ReactComponent as SearchIcon } from '../assets/search.svg'
+import { useLandingStore } from '../store/landing'
 
 //#region STYLES
 const LandingContainer = styled.div`
   width: 100vw;
-  background: grey;
-  /* padding: 60px 240px; */
-`
-
-const HeaderContainer = styled.div`
-  width: 100%;
-  display: flex;
-  align-items: center;
-`
-
-const LogoText = styled.span`
-  font-size: 36px;
-  font-family: 'Circular-B';
-`
-
-const Content = styled.div`
-  width: 100%;
-  /* background: green; */
-`
-
-const Hero = styled.section`
-  width: 100%;
-  display: flex;
 `
 
 const Left = styled.div`
   flex: 7;
-  /* background: pink; */
 `
 
 const Right = styled.div`
   flex: 5;
-  background: orchid;
-`
-
-const SwitcherContainer = styled.div`
-  /* background: red; */
-  margin-top: 94px;
-`
-
-const SwitcherListContainer = styled.ul`
   display: flex;
-  list-style: none;
-  gap: 24px;
+  align-items: center;
+  justify-content: flex-end;
 `
 
-const SwitcherListItem = styled.li`
-  font-family: 'Circular-B';
-  font-size: 16px;
-  cursor: pointer;
-`
-
-const HeroTextContainer = styled.div`
+const HeroTitleContainer = styled.div`
   display: flex;
   flex-direction: column;
+  margin-top: 56px;
 `
 
 const HeroText = styled.span`
-  font-size: 80px;
+  font-size: 4.167vw;
   font-family: 'Circular-B';
   line-height: 111.5%;
 `
 
-const HeroDescription = styled.span``
+const HeroDescriptionContainer = styled.div`
+  margin-top: 46px;
+`
+
+const HeroDescription = styled.span`
+  color: #828282;
+  font-size: 1.1vw;
+`
 
 const HeroImageContainer = styled.div`
   background: blue;
-  width: 546px;
-  height: 549px;
+  width: 28.438vw;
+  height: 580px;
+  border-radius: 20px;
+  overflow: hidden;
 `
 
-const LaunchAppButtonContainer = styled.div``
-
-const LaunchAppButton = styled.button``
-
-const NavigationContainer = styled.nav``
-
-const ListContainer = styled.ul`
-  list-style: none;
+const LaunchAppButtonContainer = styled.div`
+  margin-top: 100px;
   display: flex;
-  margin-left: 72px;
+  align-items: center;
   gap: 20px;
 `
 
-const ListItem = styled.li`
+const LaunchAppButton = styled.button`
+  color: black;
+  padding: 20px 48px;
+  border-radius: 12px;
+  outline: none;
+  font-size: 24px;
+  border: none;
   cursor: pointer;
-  opacity: 0.5;
-  transition: all 0.25s ease;
+  font-family: 'Circular-B';
+  background: #d9d9d9;
 
-  :hover {
-    opacity: 1;
+  :active {
+    outline: none;
   }
 `
 
+const Hero = styled.div`
+  width: 100%;
+  padding: 200px 10.417vw 50px;
+  display: flex;
+`
+
+const HeroImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`
+
+const HeroContainer = styled.section`
+  width: 100%;
+`
+
+const InputWithIcon = styled.div`
+  border-radius: 12px;
+  position: relative;
+`
+
+const Input = styled.input`
+  border-radius: 12px;
+  padding: 19px 20px 19px 60px;
+  font-size: 24px;
+  background: #d9d9d9;
+  border: none;
+  color: black;
+  font-family: 'Circular-M';
+  line-height: 30px;
+  margin-top: 1px;
+
+  :active {
+    outline: none;
+  }
+`
+
+const InputIcon = styled.div`
+  position: absolute;
+  top: 50%;
+  transform: translate(18px, -40%);
+`
+
+const Seperator = styled.span`
+  font-size: 24px;
+  font-style: italic;
+  color: #8a8a8a;
+`
 //#endregion
 
 const Landing = () => {
+  const role = useLandingStore((state) => state.role)
+
   return (
     <LandingContainer>
-      {/* <HeaderContainer>
-        <LogoText>flexin</LogoText>
-        <NavigationContainer>
-          <ListContainer>
-            <ListItem>SuperteamVN</ListItem>
-            <ListItem>SuperteamVN</ListItem>
-          </ListContainer>
-        </NavigationContainer>
-      </HeaderContainer>
-      <Content>
+      <Header />
+      <HeroContainer>
         <Hero>
           <Left>
-            <SwitcherContainer>
-              <SwitcherListContainer>
-                <SwitcherListItem>For Provider</SwitcherListItem>
-                <div></div>
-                <SwitcherListItem>For Hunter</SwitcherListItem>
-              </SwitcherListContainer>
-            </SwitcherContainer>
-            <HeroTextContainer>
-              <div>
-                <HeroText>Reward swag</HeroText>
-              </div>
-              <div>
-                <HeroText>To your awesome</HeroText>
-              </div>
-              <div>
-                <HeroText>Community</HeroText>
-              </div>
-            </HeroTextContainer>
-            <HeroDescription>
-              <span>Securely manage your treasury, program upgrades and tokens with your Squad.</span>
-            </HeroDescription>
-            <LaunchAppButtonContainer>
-              <LaunchAppButton>Launch App</LaunchAppButton>
-            </LaunchAppButtonContainer>
+            <RoleSwitcher />
+            {role === 'provider' ? (
+              <>
+                <HeroTitle content={['Reward swag', 'To your awesome', 'Community']} />
+                <HeroDesc content='Securely manage your treasury, program upgrades\n and tokens with your Squad.' />
+                <LaunchAppButtonContainer>
+                  <LaunchAppButton>Launch App</LaunchAppButton>
+                </LaunchAppButtonContainer>
+              </>
+            ) : (
+              <>
+                <HeroTitle content={['Shi*t, ser!', `You're the`, 'best Hunter']} />
+                <HeroDesc content='Securely manage your treasury, program upgrades\n and tokens with your Squad.' />
+                <LaunchAppButtonContainer>
+                  {role === 'hunter' ? (
+                    <>
+                      <InputWithIcon>
+                        <InputIcon>
+                          <SearchIcon />
+                        </InputIcon>
+                        <Input placeholder='View a hunter profile' />
+                      </InputWithIcon>
+                      <Seperator>or</Seperator>
+                    </>
+                  ) : null}
+                  <LaunchAppButton>Create Yours</LaunchAppButton>
+                </LaunchAppButtonContainer>
+              </>
+            )}
           </Left>
           <Right>
-            <HeroImageContainer></HeroImageContainer>
+            <HeroImageContainer>
+              <HeroImage src='https://media1.giphy.com/media/5GYOM3j7f9Df7Gmq1T/giphy.gif?cid=ecf05e474xqdnxqvy8r2hbyqchx443ds9tdwkyezj5pcvsu7&rid=giphy.gif&ct=g'></HeroImage>
+            </HeroImageContainer>
           </Right>
         </Hero>
-      </Content> */}
+      </HeroContainer>
     </LandingContainer>
+  )
+}
+
+const HeroTitle = ({ content }: { content: string[] }) => {
+  return (
+    <HeroTitleContainer>
+      <div>
+        <HeroText>{content[0]}</HeroText>
+      </div>
+      <div>
+        <HeroText>{content[1]}</HeroText>
+      </div>
+      <div>
+        <HeroText> — {content[2]}</HeroText>
+      </div>
+    </HeroTitleContainer>
+  )
+}
+
+const HeroDesc = ({ content }: { content: string }) => {
+  return (
+    <HeroDescriptionContainer>
+      <HeroDescription>{`Securely manage your treasury, program upgrades\n and tokens with your Squad.`}</HeroDescription>
+    </HeroDescriptionContainer>
   )
 }
 
