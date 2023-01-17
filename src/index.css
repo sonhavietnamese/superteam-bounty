@@ -45,14 +45,15 @@
 
 .card-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  grid-gap: 2vw;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap: 1.5vw;
   transform-style: preserve-3d;
   height: 100%;
   max-width: 1200px;
   margin: auto;
-  padding: 50px;
+  padding: 20px 50px 50px;
   position: relative;
+  /* min-width: 962px; */
 }
 
 .card {
@@ -88,20 +89,22 @@
 .card__translater {
   width: auto;
   position: relative;
-  transform: translate3d(var(--tx), var(--ty), 0) scale(var(--s));
-  -webkit-transform: translate3d(var(--tx), var(--ty), 0) scale(var(--s));
+  /* transform: translate3d(var(--tx), var(--ty), 0) scale(var(--s)); */
+  /* -webkit-transform: translate3d(var(--tx), var(--ty), 0) scale(var(--s)); */
 }
 
 .card__rotator {
-  transform: rotateY(var(--rx)) rotateX(var(--ry));
+  /* transform: rotateY(var(--rx)) rotateX(var(--ry)); */
   transform-style: preserve-3d;
-  -webkit-transform: rotateY(var(--rx)) rotateX(var(--ry));
+  /* -webkit-transform: rotateY(var (--rx)) rotateX(var(--ry)); */
   -webkit-transform-style: preserve-3d;
   box-shadow: 0px 10px 20px -5px black;
   border-radius: var(--radius);
   outline: none;
   transition: box-shadow 0.4s ease, outline 0.2s ease;
+  will-change: transform;
 }
+
 button.card__rotator {
   appearance: none;
   -webkit-appearance: none;
@@ -153,6 +156,28 @@ button.card__rotator {
 .card__front {
   opacity: 1;
   transition: opacity 0.33s ease-out;
+}
+
+.card__rotator::after {
+  opacity: 1;
+  background-image: url(https://assets.codepen.io/13471/sparkles.gif), url(https://assets.codepen.io/13471/holo.png),
+    linear-gradient(
+      125deg,
+      rgba(255, 0, 132, 0.3137254902) 15%,
+      rgba(252, 164, 0, 0.2509803922) 30%,
+      rgba(255, 255, 0, 0.1882352941) 40%,
+      rgba(0, 255, 138, 0.1254901961) 60%,
+      rgba(0, 207, 255, 0.2509803922) 70%,
+      rgba(204, 76, 250, 0.3137254902) 85%
+    );
+  background-position: 50% 50%;
+  background-size: 160%;
+  background-blend-mode: overlay;
+  z-index: 9999;
+  filter: brightness(1) contrast(1);
+  transition: all 0.33s ease;
+  mix-blend-mode: color-dodge;
+  opacity: 0.75;
 }
 
 .loading .card__front {

@@ -1,4 +1,4 @@
-import React, { PointerEvent, useRef } from 'react'
+import React, { PointerEvent, useEffect, useRef } from 'react'
 import { clamp, round } from '../utils'
 import Glare from './Glare'
 import Shine from './Shine'
@@ -52,7 +52,10 @@ const Card = () => {
     thisCard.current?.style.setProperty('--galaxybg', `center ${galaxyPosition}px`)
   }
 
-  const interactEnd = () => {}
+  // useEffect(() => {
+
+  // })
+
   return (
     <div
       ref={thisCard}
@@ -67,7 +70,6 @@ const Card = () => {
           ref={rotator}
           className='card__rotator'
           onPointerMove={interact}
-          onMouseOut={interactEnd}
           aria-label='Expand the Pokemon Card; {name}.'
           tabIndex={0}>
           <img

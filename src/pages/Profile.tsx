@@ -1,7 +1,9 @@
+import { useNavigate, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import Card from '../components/Card'
+import { DiscordHandler, SolanaWalletHandler, TelegramHandler, TwitterHandler } from '../components/SocialMediaHandler'
 import Header from '../ui/Header'
-import { truncateAddress } from '../utils'
+import { formatUsername, truncateAddress } from '../utils'
 
 const ProfileContainer = styled.div`
   width: 100%;
@@ -71,6 +73,10 @@ const SocialMediaContainer = styled.div`
   margin-top: 20px;
 `
 
+const SocialMediaText = styled.a`
+  color: #7e7e7e;
+`
+
 const BountyInformationContainer = styled.div`
   margin-top: 24px;
   display: flex;
@@ -85,6 +91,7 @@ const TitleText = styled.span`
   font-size: 16px;
   line-height: 20px;
   color: #a4a4a4;
+  text-align: center;
 `
 
 const BountyAmount = styled.span`
@@ -96,9 +103,19 @@ const BountyAmount = styled.span`
 
 const BadgeInformationContainer = styled.div`
   margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `
 
 const Profile = () => {
+  const navigate = useNavigate()
+  const { username } = useParams<{ username: string }>()
+  const twitterHanlder = 'sonha'
+  const discordHandler = 'sonha#7707'
+  const telegramHandler = 'sonhaaa'
+  const solanaWalletAddress = 'Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p'
+
   return (
     <ProfileContainer>
       <Header />
@@ -109,13 +126,13 @@ const Profile = () => {
         </AvatarContainer>
       </CoverContainer>
       <InformationContainer>
-        <ProfileName>@sonha</ProfileName>
+        <ProfileName>{formatUsername(username)}</ProfileName>
         <BountyTitle>Bounty hunter</BountyTitle>
         <SocialMediaContainer>
-          <span>{truncateAddress('Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p')}</span>
-          <span>Twitter</span>
-          <span>Telegram</span>
-          <span>Discord</span>
+          <SolanaWalletHandler walletAddress={solanaWalletAddress} />
+          <TwitterHandler handler={twitterHanlder} />
+          <TelegramHandler handler={telegramHandler} />
+          <DiscordHandler handler={discordHandler} />
         </SocialMediaContainer>
         <BountyInformationContainer>
           <TitleText>Total bounty</TitleText>
@@ -126,8 +143,9 @@ const Profile = () => {
           <section className='card-grid'>
             <Card />
             <Card />
+            <Card />
+            <Card />
           </section>
-          {/* <CardsContainer></CardsContainer> */}
         </BadgeInformationContainer>
       </InformationContainer>
     </ProfileContainer>

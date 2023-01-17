@@ -18,7 +18,9 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.6.2",
+    "react-tooltip": "^5.5.1",
     "styled-components": "^5.3.6",
+    "svelte": "^3.55.1",
     "vite-plugin-svgr": "^2.4.0",
     "zustand": "^4.3.1"
   },
