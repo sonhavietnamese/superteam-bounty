@@ -1,4 +1,4 @@
-import { WalletConnectButton } from '@solana/wallet-adapter-react-ui'
+import { WalletConnectButton, WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import styled from 'styled-components'
 
 const HeaderContainer = styled.div`
@@ -65,7 +65,7 @@ const Header = () => {
         </NavigationContainer>
       </LeftSide>
       <RightSide>
-        <WalletConnectButton />
+        <WalletMultiButton />
       </RightSide>
     </HeaderContainer>
   )

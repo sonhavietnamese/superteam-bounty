@@ -52,10 +52,6 @@ const Card = () => {
     thisCard.current?.style.setProperty('--galaxybg', `center ${galaxyPosition}px`)
   }
 
-  // useEffect(() => {
-
-  // })
-
   return (
     <div
       ref={thisCard}
@@ -72,21 +68,11 @@ const Card = () => {
           onPointerMove={interact}
           aria-label='Expand the Pokemon Card; {name}.'
           tabIndex={0}>
-          <img
-            className='card__back'
-            src='https://tcg.pokemon.com/assets/img/global/tcg-card-back-2x.jpg'
-            alt='The back of a Pokemon Card, a Pokeball in the center with Pokemon logo above and below'
-            loading='lazy'
-            width='660'
-            height='921'
-          />
           <div className='card__front'>
             <img
               src='https://images.pokemontcg.io/swsh9tg/TG16_hires.png'
               alt='Front design of the {name} Pokemon Card, with the stats and info around the edge'
               loading='lazy'
-              width='660'
-              height='921'
             />
             <Shine subtypes={subtypes} supertype={supertype} />
             <Glare subtypes={subtypes} rarity={rarity} />

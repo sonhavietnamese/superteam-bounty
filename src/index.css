@@ -10,7 +10,32 @@
 
 @font-face {
   font-family: 'Circular-M-I';
-  src: url('fonts/MediumItalic.otf') format('otf');
+  src: url('fonts/MediumItalic.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'HB';
+  src: url('fonts/HB.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'HBO';
+  src: url('fonts/HBO.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'CD-B';
+  src: url('fonts/ClashDisplay-Bold.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'CD-M';
+  src: url('fonts/ClashDisplay-Medium.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'CD-R';
+  src: url('fonts/ClashDisplay-Regular.otf') format('opentype');
 }
 
 :root {
@@ -38,6 +63,21 @@
   box-sizing: border-box;
 }
 
+.wallet-adapter-button:not([disabled]):hover {
+  background-color: #fff;
+}
+
+.custom-marquee {
+  background: #757575;
+  padding: 8 !important;
+  transform: translateX(-50%) rotate(5.98deg);
+  width: 120vw;
+  left: 50%;
+  overflow: hidden;
+  margin-top: -30;
+  z-index: 99;
+}
+
 .container {
   width: 100vw;
   height: 100vh;
@@ -51,8 +91,8 @@
   height: 100%;
   max-width: 1200px;
   margin: auto;
-  padding: 20px 50px 50px;
-  position: relative;
+  padding: 32px 50px 50px;
+  /* position: relative; */
   /* min-width: 962px; */
 }
 

@@ -1,3 +1,4 @@
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { useNavigate, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import Card from '../components/Card'
