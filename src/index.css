@@ -63,6 +63,18 @@
   box-sizing: border-box;
 }
 
+#gradient-canvas {
+  position: absolute;
+  z-index: 0;
+  width: 100%;
+  height: 440px;
+  border-radius: 300px;
+  --gradient-color-1: #c3e4ff;
+  --gradient-color-2: #6ec3f4;
+  --gradient-color-3: #eae2ff;
+  --gradient-color-4: #b9beff;
+}
+
 .wallet-adapter-button:not([disabled]):hover {
   background-color: #fff;
 }
@@ -71,11 +83,11 @@
   background: #757575;
   padding: 8 !important;
   transform: translateX(-50%) rotate(5.98deg);
-  width: 120vw;
+  width: 120vw !important;
   left: 50%;
   overflow: hidden;
   margin-top: -30;
-  z-index: 99;
+  z-index: 10;
 }
 
 .container {

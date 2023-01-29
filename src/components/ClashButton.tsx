@@ -1,10 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const Container = styled.button`
+const Container = styled.button<{ outline: boolean }>`
   outline: none;
   padding: 9px 24px;
-  border: 1px solid #ffffff;
+  border: ${(props) => (props.outline ? '1px solid #ffffff' : 'none')};
   border-radius: 32px;
   background: transparent;
   font-family: 'CD-M';
@@ -19,8 +19,12 @@ const Container = styled.button`
   }
 `
 
-const ClashButton = ({ text }: { text: string }) => {
-  return <Container>{text}</Container>
+const ClashButton = ({ text, outline = true, onClick }: { text: string; outline?: boolean; onClick: () => void }) => {
+  return (
+    <Container outline={outline} onClick={onClick}>
+      {text}
+    </Container>
+  )
 }
 
 export default ClashButton

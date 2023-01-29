@@ -1,18 +1,33 @@
-import React, { useEffect } from 'react'
-import styled from 'styled-components'
-import { ReactComponent as SearchIcon } from '../assets/search-icon.svg'
-import { ReactComponent as EditProfileIcon } from '../assets/edit-profile.svg'
-import ClashButton from '../components/ClashButton'
-import { DiscordHandler, TwitterHandler } from '../components/SocialMediaHandlerV2'
-import Marquee from 'react-fast-marquee'
-import { formatAmount, formatUsername } from '../utils'
-import Card from '../components/Card'
-import { useParams } from 'react-router-dom'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import * as anchor from '@project-serum/anchor'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { Connection, PublicKey } from '@solana/web3.js'
-import { AnchorProvider, Program } from '@project-serum/anchor'
-import idl from '../utils/idl.json'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { PublicKey, SystemProgram } from '@solana/web3.js'
+import { useEffect, useRef, useState } from 'react'
+import Marquee from 'react-fast-marquee'
+import { useNavigate, useParams } from 'react-router-dom'
+import styled from 'styled-components'
+import { ReactComponent as EditProfileIcon } from '../assets/edit-profile.svg'
+import { ReactComponent as SearchIcon } from '../assets/search-icon.svg'
+import Card from '../components/Card'
+import ClashButton from '../components/ClashButton'
+import {
+  DiscordHandler,
+  GithubHandler,
+  LinkedinHandler,
+  SolanaWalletHandler,
+  TelegramHandler,
+  TwitterHandler,
+} from '../components/SocialMediaHandlerV2'
+import { formatAmount, formatUsername } from '../utils'
+
+import ClashInput from '../components/ClashInput'
+import FullPageLoading from '../components/FullPageLoading'
+import ProfileNotFound from '../components/ProfileNotFound'
+import { EMPTY_STRING, PROFILE_TAG } from '../utils/constants'
+import { Flexin, IDL } from '../utils/flexin'
+import idl from '../utils/flexin.json'
+
+window.Buffer = Buffer
 
 //#region STYLES
 const Container = styled.div`
@@ -28,7 +43,7 @@ const Header = styled.header`
   justify-content: space-between;
   align-items: center;
   position: fixed;
-  z-index: 999;
+  z-index: 10;
   backdrop-filter: blur(10px);
 `
 
@@ -68,11 +83,13 @@ const ProfileBackground = styled.div`
   align-items: center;
   flex-direction: column;
   justify-content: center;
+  z-index: 2;
 `
 
 const ProfileNameContainer = styled.div`
   display: flex;
   justify-content: flex-end;
+  z-index: 2;
 `
 
 const ProfileUsername = styled.span`
@@ -100,6 +117,7 @@ const StyledEditProfileIcon = styled(EditProfileIcon)`
 const SocialMedia = styled.div`
   display: flex;
   gap: 40px;
+  z-index: 2;
 `
 
 const ProfileTitle = styled.span`
@@ -125,7 +143,7 @@ const TotalBountyContainer = styled.div`
 
 const SubTitle = styled.span`
   font-size: 24px;
-  color: #898989;
+  color: #c3c3c3;
 `
 
 const TotalBountyAmount = styled.span`
@@ -163,101 +181,301 @@ const CustomWalletMultiButton = styled(WalletMultiButton)`
     background: #fff;
   }
 `
+
+const ModalContainer = styled.div`
+  width: 100%;
+  height: 100vh;
+  background: red;
+  position: fixed;
+  top: 0;
+  z-index: 999999;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12.5px);
+  overflow-y: hidden;
+`
+
+const ModalContentContainer = styled.div`
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  background: #1d1d1d;
+  border-radius: 28px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+`
+
+const ModalTitle = styled.span`
+  font-size: 24px;
+  font-family: 'CD-M';
+  color: #fff;
+  text-align: center;
+`
+
+const ModalInputContainer = styled.div`
+  display: flex;
+  gap: 32px;
+  flex-direction: column;
+  margin-top: 32px;
+  margin-bottom: 54px;
+`
+
+const ModalButtonGroup = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+`
+
 //#endregion
 
+type UserProfile = {
+  username: string
+  twitter: string
+  telegram: string
+  discord: string
+  github: string
+  linkedin: string
+  walletAddress: string
+}
+
 const ProfileV2 = () => {
+  const usernameRef = useRef<HTMLInputElement>(null)
+  const twitterRef = useRef<HTMLInputElement>(null)
+  const telegramRef = useRef<HTMLInputElement>(null)
+  const discordRef = useRef<HTMLInputElement>(null)
+  const githubRef = useRef<HTMLInputElement>(null)
+  const linkedinRef = useRef<HTMLInputElement>(null)
+
   const { username } = useParams<{ username: string }>()
+  const navigate = useNavigate()
   const { publicKey } = useWallet()
   const { connection } = useConnection()
-  const twitterHanlder = 'sonha'
-  const discordHandler = 'sonha#7707'
-  const telegramHandler = 'sonhaaa'
-  const solanaWalletAddress = 'Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p'
+
   const profileTitle = 'Bounty hunter'
-  const programID = 'YMtiQhF9Go7D86CcWbY34qTYtx6ptAxeXXxHRKzHx5H'
-  let counterPubkey
+  const programID = new PublicKey(idl.metadata.address)
+  const provider = new anchor.AnchorProvider(connection, window.solana, anchor.AnchorProvider.defaultOptions())
 
-  // ;[counterPubkey] = await anchor.web3.PublicKey.findProgramAddress([counterSeed], program.programId)
+  const [openModal, setOpenModal] = useState(false)
+  const [transactionPending, setTransactionPending] = useState(false)
+  const [userProfile, setUserProfile] = useState<UserProfile | undefined>()
+  const [isOwner, setIsOwner] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const fetchAll = async () => {
-    const program = await getProgram()
+  const updateProfile = async () => {
+    if (publicKey) {
+      try {
+        const program = await loadProgram()
 
-    console.log(program)
+        setTransactionPending(true)
+        const username = usernameRef.current?.value || EMPTY_STRING
+        const twitter = twitterRef.current?.value || EMPTY_STRING
+        const telegram = telegramRef.current?.value || EMPTY_STRING
+        const discord = discordRef.current?.value || EMPTY_STRING
+        const github = githubRef.current?.value || EMPTY_STRING
+        const linkedin = linkedinRef.current?.value || EMPTY_STRING
 
-    // const account = await program.account..fetch(publicKey!)
+        const [profilePDA] = anchor.web3.PublicKey.findProgramAddressSync(
+          [anchor.utils.bytes.utf8.encode(PROFILE_TAG), publicKey.toBuffer()],
+          programID,
+        )
 
-    // console.log(account)
+        await program.methods
+          .updateProfile(username, twitter, telegram, discord, github, linkedin)
+          .accounts({
+            profile: profilePDA,
+            signer: publicKey,
+            systemProgram: SystemProgram.programId,
+          })
+          .rpc()
 
-    // console.log(a)
+        setOpenModal(false)
+        navigate(`/${username}`, { replace: true })
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setTransactionPending(false)
+      }
+    }
   }
 
-  const getProvider = () => {
-    const provider = new AnchorProvider(connection, window.solana, {
-      preflightCommitment: 'processed',
-    })
-    return provider
-  }
-
-  const getProgram = async () => {
-    console.log(getProvider())
-    const idl = await Program.fetchIdl(programID, getProvider())
-    console.log(idl)
-
-    return new Program(idl, programID, getProvider())
-  }
+  const loadProgram = async () => new anchor.Program<Flexin>(IDL, programID, provider)
 
   useEffect(() => {
-    console.log(getProgram())
-  }, [])
+    setIsLoading(true)
+    const fetchAccountByUsername = async () => {
+      try {
+        const program = await loadProgram()
 
-  console.log(publicKey?.toString())
+        const allProfiles = await program.account.profile.all()
+        const filteredProfile = allProfiles.map((profile) => {
+          if (profile.account.username === username) return profile.account
+        })
+        setUserProfile(filteredProfile[0])
+      } catch (error) {
+        console.error(error)
+        // setIsLoading(false)
+      }
+    }
+
+    fetchAccountByUsername()
+  }, [username])
+
+  useEffect(() => {
+    const checkIsProfileOwner = async () => {
+      if (publicKey && userProfile) {
+        try {
+          const program = await loadProgram()
+
+          const [userPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+            [anchor.utils.bytes.utf8.encode('PROFILE'), publicKey.toBuffer()],
+            programID,
+          )
+
+          const user = await program.account.profile.fetch(userPDA)
+          console.log(userProfile)
+
+          setIsOwner(
+            user &&
+              user.walletAddress === publicKey.toString() &&
+              userProfile.walletAddress === userProfile.walletAddress,
+          )
+        } catch (error) {
+          setIsOwner(false)
+          setIsLoading(false)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    checkIsProfileOwner()
+  }, [publicKey, userProfile])
+
+  useEffect(() => {
+    if (
+      userProfile &&
+      twitterRef.current &&
+      telegramRef.current &&
+      discordRef.current &&
+      githubRef.current &&
+      linkedinRef.current
+    ) {
+      twitterRef.current.placeholder = userProfile?.twitter || ''
+      telegramRef.current.placeholder = userProfile?.telegram || ''
+      discordRef.current.placeholder = userProfile?.discord || ''
+      githubRef.current.placeholder = userProfile?.github || ''
+      linkedinRef.current.placeholder = userProfile?.linkedin || ''
+    }
+  }, [userProfile])
 
   return (
     <Container>
+      {isLoading ? <FullPageLoading /> : <></>}
       <Header>
         <SearchIcon />
         <LogoText>FLexin</LogoText>
         <Group>
-          <ClashButton text='Share profile' />
-          <button onClick={fetchAll}>click</button>
-          {/* <ClashButton text='Connect wallet' /> */}
+          <ClashButton key={0} onClick={() => {}} text='Share profile' />
           <CustomWalletMultiButton />
         </Group>
       </Header>
-      <Content>
-        <UserProfileContainer>
-          <ProfileBackground>
-            <ProfileNameContainer>
-              <ProfileUsername>{formatUsername(username)}</ProfileUsername>
-              <StyledEditProfileIcon />
-            </ProfileNameContainer>
-            <SocialMedia>
-              <TwitterHandler handler='sonha' />
-              <DiscordHandler handler='sonha' />
-            </SocialMedia>
-          </ProfileBackground>
-        </UserProfileContainer>
-        <Marquee gradient={false} className='custom-marquee'>
-          {Array(15)
-            .fill(0)
-            .map(() => (
-              <ProfileTitle>{profileTitle}</ProfileTitle>
-            ))}
-        </Marquee>
-        <TotalBountyContainer>
-          <SubTitle>Total bounty</SubTitle>
-          <TotalBountyAmount>{formatAmount(1000000)} USDC</TotalBountyAmount>
-        </TotalBountyContainer>
-        <BadgeInformationContainer>
-          <SubTitle>Badges</SubTitle>
-          <div className='card-grid'>
-            <Card />
-            <Card />
-            <Card />
-            <Card />
-          </div>
-        </BadgeInformationContainer>
-      </Content>
+      {userProfile ? (
+        <Content>
+          <UserProfileContainer>
+            <ProfileBackground>
+              <ProfileNameContainer>
+                <ProfileUsername>{formatUsername(username)}</ProfileUsername>
+                {isOwner ? <StyledEditProfileIcon onClick={() => setOpenModal(true)} /> : <></>}
+              </ProfileNameContainer>
+              <SocialMedia>
+                <TwitterHandler handler={userProfile.twitter} />
+                <TelegramHandler handler={userProfile.discord} />
+                <DiscordHandler handler={userProfile.discord} />
+                <GithubHandler handler={userProfile.github} />
+                <LinkedinHandler handler={userProfile.linkedin} />
+                <SolanaWalletHandler walletAddress={userProfile.walletAddress} />
+              </SocialMedia>
+            </ProfileBackground>
+          </UserProfileContainer>
+          <Marquee gradient={false} className='custom-marquee'>
+            {Array(15)
+              .fill(0)
+              .map((_, index) => (
+                <ProfileTitle key={index}>{profileTitle}</ProfileTitle>
+              ))}
+          </Marquee>
+          <TotalBountyContainer>
+            <SubTitle>Total bounty</SubTitle>
+            <TotalBountyAmount>{formatAmount(1000000)} USDC</TotalBountyAmount>
+          </TotalBountyContainer>
+          <BadgeInformationContainer>
+            <SubTitle>Badges</SubTitle>
+            <div className='card-grid'>
+              <Card key={1} />
+              <Card key={2} />
+              <Card key={3} />
+              <Card key={4} />
+            </div>
+          </BadgeInformationContainer>
+        </Content>
+      ) : (
+        <ProfileNotFound profileName={formatUsername(username)} />
+      )}
+
+      {openModal ? (
+        <ModalContainer>
+          <ModalContentContainer>
+            <ModalTitle>Edit profile</ModalTitle>
+            <ModalInputContainer>
+              <ClashInput
+                key={1}
+                ref={usernameRef}
+                title='Username'
+                placeholder={userProfile?.username ? userProfile.username : 'ex: flexin'}
+                counter
+                maximumWords={15}
+              />
+              <ClashInput
+                key={2}
+                ref={twitterRef}
+                title='Twitter'
+                placeholder={userProfile?.twitter ? userProfile.twitter : 'ex: flexin-offical'}
+              />
+              <ClashInput
+                key={3}
+                ref={telegramRef}
+                title='Telegram'
+                placeholder={userProfile?.telegram ? userProfile.telegram : 'ex: flexin'}
+              />
+              <ClashInput
+                key={4}
+                ref={discordRef}
+                title='Discord'
+                placeholder={userProfile?.discord ? userProfile.discord : 'ex: flexin#1234'}
+              />
+              <ClashInput
+                key={5}
+                ref={githubRef}
+                title='Github'
+                placeholder={userProfile?.github ? userProfile.github : 'ex: https://github.com/flexin/'}
+              />
+              <ClashInput
+                key={6}
+                ref={linkedinRef}
+                title='Linkedin'
+                placeholder={userProfile?.linkedin ? userProfile.linkedin : 'ex: https://linkedin.com/in/flexin/'}
+              />
+            </ModalInputContainer>
+            <ModalButtonGroup>
+              <ClashButton key={1} onClick={() => setOpenModal(false)} outline={false} text='Cancel' />
+              <ClashButton key={2} onClick={updateProfile} text='Done' />
+            </ModalButtonGroup>
+          </ModalContentContainer>
+        </ModalContainer>
+      ) : (
+        <></>
+      )}
     </Container>
   )
 }

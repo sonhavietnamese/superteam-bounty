@@ -1,33 +1,26 @@
+import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
+import '@solana/wallet-adapter-react-ui/styles.css'
+import { Coin98WalletAdapter, PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
+import { ReactNode, useMemo } from 'react'
 import ReactDOM from 'react-dom/client'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 import Landing from './pages/Landing'
-import React, { FC, ReactNode, useMemo } from 'react'
-import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
-import { Coin98WalletAdapter, PhantomWalletAdapter, UnsafeBurnerWalletAdapter } from '@solana/wallet-adapter-wallets'
-import { WalletModalProvider, WalletDisconnectButton, WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { clusterApiUrl } from '@solana/web3.js'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import '@solana/wallet-adapter-react-ui/styles.css'
-import Profile from './pages/Profile'
 import ProfileV2 from './pages/ProfileV2'
 
 export const WalletConnectable = ({ children }: { children: ReactNode }) => {
-  const network = WalletAdapterNetwork.Devnet
+  // const network = WalletAdapterNetwork.Devnet
+  const network = 'https://solana-devnet.g.alchemy.com/v2/OEh2s7PqedaI668F-700S1YmTBhQWprZ'
 
-  const endpoint = useMemo(() => clusterApiUrl(network), [network])
+  const endpoint = useMemo(() => 'https://solana-devnet.g.alchemy.com/v2/OEh2s7PqedaI668F-700S1YmTBhQWprZ', [network])
 
   const wallets = useMemo(() => [new PhantomWalletAdapter(), new Coin98WalletAdapter()], [network])
 
   return (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>
-          {/* <WalletMultiButton /> */}
-          {/* <WalletDisconnectButton /> */}
-          {/* <RouterProvider router={router} /> */}
-          {children}
-        </WalletModalProvider>
+        <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
   )

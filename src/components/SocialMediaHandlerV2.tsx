@@ -21,9 +21,9 @@ const Container = styled.div`
   align-items: center;
 `
 
-const SolanaWalletHandler = ({ walletAddress }: { walletAddress: string }) => {
+const SolanaWalletHandler = ({ walletAddress }: { walletAddress: string | undefined }) => {
   const copyWalletAddress = async () => {
-    if ('clipboard' in navigator) {
+    if ('clipboard' in navigator && walletAddress) {
       return await navigator.clipboard.writeText(walletAddress)
     } else {
       return document.execCommand('copy', true, walletAddress)
@@ -32,39 +32,91 @@ const SolanaWalletHandler = ({ walletAddress }: { walletAddress: string }) => {
 
   return (
     <>
-      <Text onClick={copyWalletAddress} id='wallet-handler'>
-        {truncateAddress(walletAddress)}
-      </Text>
-      <ReactTooltip anchorId='wallet-handler' place='top' content='Copy' />
+      {walletAddress ? (
+        <>
+          <Text onClick={copyWalletAddress} id='wallet-handler'>
+            {truncateAddress(walletAddress)}
+          </Text>
+          <ReactTooltip anchorId='wallet-handler' place='top' content='Copy' />
+        </>
+      ) : (
+        <></>
+      )}
     </>
   )
 }
 
-const TelegramHandler = ({ handler }: { handler: string }) => {
+const TelegramHandler = ({ handler }: { handler: string | undefined }) => {
   return (
-    <Container>
-      <Text target='_blank' href={`https://t.me/${handler}`}>
-        Telegram
-      </Text>
-      <LinkArrow />
-    </Container>
+    <>
+      {handler ? (
+        <Container>
+          <Text target='_blank' href={`https://t.me/${handler}`}>
+            Telegram
+          </Text>
+          <LinkArrow />
+        </Container>
+      ) : (
+        <></>
+      )}
+    </>
   )
 }
 
-const TwitterHandler = ({ handler }: { handler: string }) => {
+const TwitterHandler = ({ handler }: { handler: string | undefined }) => {
   return (
-    <Container>
-      <Text target='_blank' href={`https://twitter.com/${handler}`}>
-        Twitter
-      </Text>
-      <LinkArrow />
-    </Container>
+    <>
+      {handler ? (
+        <Container>
+          <Text target='_blank' href={`https://twitter.com/${handler}`}>
+            Twitter
+          </Text>
+          <LinkArrow />
+        </Container>
+      ) : (
+        <></>
+      )}
+    </>
   )
 }
 
-const DiscordHandler = ({ handler }: { handler: string }) => {
+const GithubHandler = ({ handler }: { handler: string | undefined }) => {
+  return (
+    <>
+      {handler ? (
+        <Container>
+          <Text target='_blank' href={`https://github.com/${handler}`}>
+            Github
+          </Text>
+          <LinkArrow />
+        </Container>
+      ) : (
+        <></>
+      )}
+    </>
+  )
+}
+
+const LinkedinHandler = ({ handler }: { handler: string | undefined }) => {
+  return (
+    <>
+      {handler ? (
+        <Container>
+          <Text target='_blank' href={`https://linkedin.com/me/${handler}`}>
+            Linkedin
+          </Text>
+          <LinkArrow />
+        </Container>
+      ) : (
+        <></>
+      )}
+    </>
+  )
+}
+
+const DiscordHandler = ({ handler }: { handler: string | undefined }) => {
   const copyDiscordHandler = async () => {
-    if ('clipboard' in navigator) {
+    if ('clipboard' in navigator && handler) {
       return await navigator.clipboard.writeText(handler)
     } else {
       return document.execCommand('copy', true, handler)
@@ -72,15 +124,21 @@ const DiscordHandler = ({ handler }: { handler: string }) => {
   }
 
   return (
-    <Container>
-      <Text onClick={copyDiscordHandler} id='discord-handler'>
-        Discord
-      </Text>
-      <LinkArrow />
+    <>
+      {handler ? (
+        <Container>
+          <Text onClick={copyDiscordHandler} id='discord-handler'>
+            Discord
+          </Text>
+          <LinkArrow />
 
-      <ReactTooltip anchorId='discord-handler' place='top' content='Copy' />
-    </Container>
+          <ReactTooltip anchorId='discord-handler' place='top' content='Copy' />
+        </Container>
+      ) : (
+        <></>
+      )}
+    </>
   )
 }
 
-export { TelegramHandler, TwitterHandler, DiscordHandler, SolanaWalletHandler }
+export { TelegramHandler, TwitterHandler, DiscordHandler, SolanaWalletHandler, GithubHandler, LinkedinHandler }

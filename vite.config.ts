@@ -6,7 +6,7 @@ import svgr from 'vite-plugin-svgr'
 export default defineConfig({
   plugins: [svgr(), react()],
   define: {
-    global: {},
+    global: '({})',
     process: {
       env: {},
     },
