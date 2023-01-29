@@ -1,6 +1,5 @@
 import * as anchor from '@project-serum/anchor'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { PublicKey, SystemProgram } from '@solana/web3.js'
 import { useEffect, useRef, useState } from 'react'
 import Marquee from 'react-fast-marquee'
@@ -21,8 +20,18 @@ import {
 import { formatAmount, formatUsername } from '../utils'
 
 import ClashInput from '../components/ClashInput'
+import CustomWalletMultiButton from '../components/CustomWalletMultiButton'
 import FullPageLoading from '../components/FullPageLoading'
 import ProfileNotFound from '../components/ProfileNotFound'
+import { Container } from '../ui/Common.style'
+import { Group, Header, LogoText } from '../ui/Header.style'
+import {
+  ModalButtonGroup,
+  ModalContainer,
+  ModalContentContainer,
+  ModalInputContainer,
+  ModalTitle,
+} from '../ui/Modal.style'
 import { EMPTY_STRING, PROFILE_TAG } from '../utils/constants'
 import { Flexin, IDL } from '../utils/flexin'
 import idl from '../utils/flexin.json'
@@ -30,37 +39,6 @@ import idl from '../utils/flexin.json'
 window.Buffer = Buffer
 
 //#region STYLES
-const Container = styled.div`
-  width: 100%;
-  height: 100%;
-  background: #202020;
-`
-
-const Header = styled.header`
-  width: 100%;
-  padding: 32px 72px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: fixed;
-  z-index: 10;
-  backdrop-filter: blur(10px);
-`
-
-const LogoText = styled.span`
-  font-size: 24px;
-  font-family: 'HB';
-  color: #fff;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  mix-blend-mode: difference;
-`
-
-const Group = styled.div`
-  gap: 20px;
-  display: flex;
-`
 
 const Content = styled.section`
   overflow: hidden;
@@ -162,71 +140,6 @@ const BadgeInformationContainer = styled.div`
   overflow: hidden;
 `
 
-const CustomWalletMultiButton = styled(WalletMultiButton)`
-  font-family: 'CD-M';
-  border-radius: 50px;
-  outline: none;
-  padding: 9px 24px;
-  border: 1px solid #ffffff;
-  border-radius: 32px;
-  background: transparent;
-  font-family: 'CD-M';
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  color: #fff;
-
-  :hover {
-    color: #000;
-    background: #fff;
-  }
-`
-
-const ModalContainer = styled.div`
-  width: 100%;
-  height: 100vh;
-  background: red;
-  position: fixed;
-  top: 0;
-  z-index: 999999;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(12.5px);
-  overflow-y: hidden;
-`
-
-const ModalContentContainer = styled.div`
-  padding: 28px 32px;
-  display: flex;
-  flex-direction: column;
-  background: #1d1d1d;
-  border-radius: 28px;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-`
-
-const ModalTitle = styled.span`
-  font-size: 24px;
-  font-family: 'CD-M';
-  color: #fff;
-  text-align: center;
-`
-
-const ModalInputContainer = styled.div`
-  display: flex;
-  gap: 32px;
-  flex-direction: column;
-  margin-top: 32px;
-  margin-bottom: 54px;
-`
-
-const ModalButtonGroup = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-`
-
 //#endregion
 
 type UserProfile = {
@@ -304,6 +217,8 @@ const ProfileV2 = () => {
   useEffect(() => {
     setIsLoading(true)
     const fetchAccountByUsername = async () => {
+      console.log('fetchAccountByUsername')
+
       try {
         const program = await loadProgram()
 
@@ -311,10 +226,15 @@ const ProfileV2 = () => {
         const filteredProfile = allProfiles.map((profile) => {
           if (profile.account.username === username) return profile.account
         })
+
         setUserProfile(filteredProfile[0])
       } catch (error) {
         console.error(error)
         // setIsLoading(false)
+      } finally {
+        if (!publicKey) {
+          setIsLoading(false)
+        }
       }
     }
 
@@ -323,7 +243,10 @@ const ProfileV2 = () => {
 
   useEffect(() => {
     const checkIsProfileOwner = async () => {
+      console.log('checkIsProfileOwner')
       if (publicKey && userProfile) {
+        console.log('inside')
+
         try {
           const program = await loadProgram()
 

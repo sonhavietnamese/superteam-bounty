@@ -44,10 +44,11 @@ type InputProps = {
   placeholder: string
   counter?: boolean
   maximumWords?: number
+  type?: 'number' | 'text'
 }
 
 const ClashInput = forwardRef<HTMLInputElement, InputProps>(
-  ({ title, placeholder, maximumWords = 15, counter = false }, ref) => {
+  ({ title, placeholder, maximumWords = 15, counter = false, type = 'text' }, ref) => {
     const [value, setValue] = useState('')
 
     const handleOnchange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +62,14 @@ const ClashInput = forwardRef<HTMLInputElement, InputProps>(
       <InputContainer>
         <InputTitle>{title}</InputTitle>
         <InputFieldContainer>
-          <InputField id='input' value={value} onChange={handleOnchange} ref={ref} placeholder={placeholder} />
+          <InputField
+            id='input'
+            value={value}
+            type={type}
+            onChange={handleOnchange}
+            ref={ref}
+            placeholder={placeholder}
+          />
           {counter ? (
             <WordCounterContainer>
               <Counter>
