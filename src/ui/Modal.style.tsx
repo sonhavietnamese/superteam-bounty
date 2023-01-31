@@ -14,6 +14,7 @@ const ModalContainer = styled.div`
 
 const ModalContentContainer = styled.div`
   padding: 28px 32px;
+  width: 600px;
   display: flex;
   flex-direction: column;
   background: #1d1d1d;

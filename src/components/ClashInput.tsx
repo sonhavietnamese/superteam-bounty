@@ -5,6 +5,7 @@ const InputContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
 `
 
 const InputTitle = styled.span`
@@ -19,12 +20,13 @@ const InputFieldContainer = styled.div`
 `
 
 const InputField = styled.input`
-  border: 1px solid #ffffff;
+  /* border: 1px solid #ffffff; */
+  border: none;
   border-radius: 27px;
   padding: 12px 24px;
   font-size: 20px;
   font-family: 'Circular-M';
-  width: 500px;
+  width: 100%;
 `
 
 const WordCounterContainer = styled.div`

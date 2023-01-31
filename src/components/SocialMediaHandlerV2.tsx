@@ -10,9 +10,7 @@ const Text = styled.a`
   text-decoration: none;
   font-size: 20px;
   font-family: 'Circular-M';
-  text-transform: uppercase;
   color: white;
-  /* mix-blend-mode: difference; */
 `
 
 const Container = styled.div`
@@ -52,7 +50,7 @@ const TelegramHandler = ({ handler }: { handler: string | undefined }) => {
       {handler ? (
         <Container>
           <Text target='_blank' href={`https://t.me/${handler}`}>
-            Telegram
+            TELEGRAM
           </Text>
           <LinkArrow />
         </Container>
@@ -69,7 +67,7 @@ const TwitterHandler = ({ handler }: { handler: string | undefined }) => {
       {handler ? (
         <Container>
           <Text target='_blank' href={`https://twitter.com/${handler}`}>
-            Twitter
+            TWITTER
           </Text>
           <LinkArrow />
         </Container>
@@ -86,7 +84,7 @@ const GithubHandler = ({ handler }: { handler: string | undefined }) => {
       {handler ? (
         <Container>
           <Text target='_blank' href={`https://github.com/${handler}`}>
-            Github
+            GITHUB
           </Text>
           <LinkArrow />
         </Container>
@@ -103,7 +101,7 @@ const LinkedinHandler = ({ handler }: { handler: string | undefined }) => {
       {handler ? (
         <Container>
           <Text target='_blank' href={`https://linkedin.com/me/${handler}`}>
-            Linkedin
+            LINKEDIN
           </Text>
           <LinkArrow />
         </Container>
@@ -128,7 +126,7 @@ const DiscordHandler = ({ handler }: { handler: string | undefined }) => {
       {handler ? (
         <Container>
           <Text onClick={copyDiscordHandler} id='discord-handler'>
-            Discord
+            DISCORD
           </Text>
           <LinkArrow />
 

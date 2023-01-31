@@ -23,8 +23,8 @@ import ClashInput from '../components/ClashInput'
 import CustomWalletMultiButton from '../components/CustomWalletMultiButton'
 import FullPageLoading from '../components/FullPageLoading'
 import ProfileNotFound from '../components/ProfileNotFound'
-import { Container } from '../ui/Common.style'
-import { Group, Header, LogoText } from '../ui/Header.style'
+import { Container, LogoText } from '../ui/Common.style'
+import { Group, Header } from '../ui/Header.style'
 import {
   ModalButtonGroup,
   ModalContainer,
@@ -200,6 +200,7 @@ const ProfileV2 = () => {
             signer: publicKey,
             systemProgram: SystemProgram.programId,
           })
+          // .instruction()
           .rpc()
 
         setOpenModal(false)
@@ -297,7 +298,7 @@ const ProfileV2 = () => {
       {isLoading ? <FullPageLoading /> : <></>}
       <Header>
         <SearchIcon />
-        <LogoText>FLexin</LogoText>
+        <LogoText fontsize='24px'>FLexin</LogoText>
         <Group>
           <ClashButton key={0} onClick={() => {}} text='Share profile' />
           <CustomWalletMultiButton />

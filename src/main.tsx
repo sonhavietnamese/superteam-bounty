@@ -9,6 +9,7 @@ import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 import CreateProposal from './pages/CreateProposal'
+import Dashboard from './pages/Dashboard'
 import Landing from './pages/Landing'
 import ProfileV2 from './pages/ProfileV2'
 
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
   {
     path: '/create-proposal',
     element: <CreateProposal />,
+  },
+  {
+    path: '/dashboard',
+    element: <Dashboard />,
   },
 ])
 

@@ -6,4 +6,14 @@ const Container = styled.div`
   background: #202020;
 `
 
-export { Container }
+const LogoText = styled.span<{ fontsize: string }>`
+  font-size: ${(props) => props.fontsize};
+  font-family: 'HB';
+  color: #fff;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  mix-blend-mode: difference;
+`
+
+export { Container, LogoText }
