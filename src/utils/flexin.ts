@@ -201,6 +201,48 @@ export type Flexin = {
       ]
       args: []
     },
+    {
+      name: 'logReward'
+      accounts: [
+        {
+          name: 'reward'
+          isMut: true
+          isSigner: true
+        },
+        {
+          name: 'signer'
+          isMut: true
+          isSigner: true
+        },
+        {
+          name: 'systemProgram'
+          isMut: false
+          isSigner: false
+        },
+      ]
+      args: [
+        {
+          name: 'beLongTo'
+          type: 'string'
+        },
+        {
+          name: 'title'
+          type: 'string'
+        },
+        {
+          name: 'externalLink'
+          type: 'string'
+        },
+        {
+          name: 'winner'
+          type: 'string'
+        },
+        {
+          name: 'amount'
+          type: 'u16'
+        },
+      ]
+    },
   ]
   accounts: [
     {
@@ -234,6 +276,34 @@ export type Flexin = {
           },
           {
             name: 'walletAddress'
+            type: 'string'
+          },
+        ]
+      }
+    },
+    {
+      name: 'reward'
+      type: {
+        kind: 'struct'
+        fields: [
+          {
+            name: 'title'
+            type: 'string'
+          },
+          {
+            name: 'externalLink'
+            type: 'string'
+          },
+          {
+            name: 'winner'
+            type: 'string'
+          },
+          {
+            name: 'amount'
+            type: 'u16'
+          },
+          {
+            name: 'beLongTo'
             type: 'string'
           },
         ]
@@ -445,6 +515,48 @@ export const IDL: Flexin = {
       ],
       args: [],
     },
+    {
+      name: 'logReward',
+      accounts: [
+        {
+          name: 'reward',
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: 'signer',
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: 'beLongTo',
+          type: 'string',
+        },
+        {
+          name: 'title',
+          type: 'string',
+        },
+        {
+          name: 'externalLink',
+          type: 'string',
+        },
+        {
+          name: 'winner',
+          type: 'string',
+        },
+        {
+          name: 'amount',
+          type: 'u16',
+        },
+      ],
+    },
   ],
   accounts: [
     {
@@ -478,6 +590,34 @@ export const IDL: Flexin = {
           },
           {
             name: 'walletAddress',
+            type: 'string',
+          },
+        ],
+      },
+    },
+    {
+      name: 'reward',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'title',
+            type: 'string',
+          },
+          {
+            name: 'externalLink',
+            type: 'string',
+          },
+          {
+            name: 'winner',
+            type: 'string',
+          },
+          {
+            name: 'amount',
+            type: 'u16',
+          },
+          {
+            name: 'beLongTo',
             type: 'string',
           },
         ],

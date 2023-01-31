@@ -11,6 +11,7 @@ import ClashButton from '../components/ClashButton'
 import Squads, { getIxPDA, getMsPDA } from '@sqds/sdk'
 import { publicKey } from '@project-serum/anchor/dist/cjs/utils'
 import FullPageLoading from '../components/FullPageLoading'
+import { truncateAddress } from '../utils'
 
 //#region STYLE
 const Content = styled.section`
@@ -209,10 +210,89 @@ const CTAContainer = styled.div`
   margin-top: 40px;
 `
 
+const TeamInformationContainer = styled.div`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+const TeamInformationWrapper = styled.div`
+  padding: 40px 56px;
+  background: #303030;
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`
+
+const InformationGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`
+
+const InformationSubtitle = styled.span`
+  font-size: 16px;
+  line-height: 20px;
+  color: #858585;
+  font-family: 'Circular-M';
+`
+
+const OwnerGroupContainer = styled.div`
+  display: flex;
+  gap: 12px;
+  overflow: auto;
+  width: 80vw;
+`
+
+const OwnerInformationContainer = styled.div`
+  background: #262626;
+  border: 1px solid #646464;
+  border-radius: 12px;
+  padding: 12px 18px;
+`
+
+const OwnerAddress = styled.span`
+  font-size: 16px;
+  line-height: 20px;
+  color: #fff;
+`
+
+const ThresholdInformation = styled.span`
+  font-size: 24px;
+  line-height: 30px;
+  color: #ffffff;
+`
+
+const AddRewardButton = styled.button`
+  background: linear-gradient(180deg, rgba(133, 109, 233, 0.7) 0%, rgba(90, 66, 183, 0.7) 100%);
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Circular-M';
+  font-size: 16px;
+  padding: 12px;
+  transition: all 0.25s ease;
+
+  :hover {
+    background: linear-gradient(180deg, rgba(133, 109, 233, 1) 0%, rgba(90, 66, 183, 1) 100%);
+    box-shadow: 0px 24px 70px rgba(57, 40, 135, 0.39), 0px 15.5556px 40.9954px rgba(57, 40, 135, 0.296111),
+      0px 9.24444px 22.2963px rgba(57, 40, 135, 0.236889), 0px 4.8px 11.375px rgba(57, 40, 135, 0.195),
+      0px 1.95556px 5.7037px rgba(57, 40, 135, 0.153111), 0px 0.444444px 2.75463px rgba(57, 40, 135, 0.0938889);
+  }
+`
 //#endregion
 
 interface DynamicInput {
   address: string
+}
+
+interface TeamMultisign {
+  createKey: anchor.web3.PublicKey
+  publicKey: anchor.web3.PublicKey
+  keys: anchor.web3.PublicKey[]
+  threshold: number
 }
 
 const Dashboard = () => {
@@ -221,7 +301,8 @@ const Dashboard = () => {
   const [ownerList, setOwnerList] = useState<DynamicInput[]>([{ address: '' }])
   const [threshold, setThreshold] = useState(1)
   const [teamAvailable, setTeamAvailable] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [teamMultisign, setTeamMultisign] = useState<TeamMultisign>()
 
   // @ts-ignore
   const squads = Squads.devnet(window.solana)
@@ -263,27 +344,30 @@ const Dashboard = () => {
     }
   }
 
-  useEffect(() => {
-    const getTeamMultisig = async () => {
-      setLoading(true)
-      try {
-        const [msPDA] = getMsPDA(publicKey!, squads.multisigProgramId)
-        const multisigAccount = await squads.getMultisig(msPDA)
-        console.log(multisigAccount)
-        setTeamAvailable(false)
-      } catch (error) {
-        setTeamAvailable(true)
-        setLoading(false)
-      } finally {
-        setLoading(false)
-      }
-    }
+  // useEffect(() => {
+  //   const getTeamMultisig = async () => {
+  //     setLoading(true)
+  //     try {
+  //       const [msPDA] = getMsPDA(publicKey!, squads.multisigProgramId)
+  //       const multisigAccount = await squads.getMultisig(msPDA)
+  //       console.log(multisigAccount)
+  //       setTeamMultisign(multisigAccount)
+  //       setTeamAvailable(false)
+  //     } catch (error) {
+  //       setTeamAvailable(true)
+  //       setLoading(false)
+  //     } finally {
+  //       setLoading(false)
+  //     }
+  //   }
 
-    getTeamMultisig()
-  }, [publicKey])
+  //   getTeamMultisig()
+  // }, [publicKey])
 
   return (
     <Container>
+      {/* {loading ? <FullPageLoading /> : <></>} */}
+
       <Header>
         <div>{/* <SearchIcon /> */} </div>
         <LogoText fontsize='24px'>FLexin</LogoText>
@@ -291,10 +375,8 @@ const Dashboard = () => {
           <CustomWalletMultiButton />
         </Group>
       </Header>
-      {loading ? (
-        <FullPageLoading />
-      ) : (
-        <Content>
+      <Content>
+        {/* {teamAvailable && !teamMultisign ? (
           <CreateTeamContainer>
             <CreateTeamBackground />
             <CreateTeamWrapper>
@@ -358,8 +440,46 @@ const Dashboard = () => {
               </CTAContainer>
             </CreateTeamWrapper>
           </CreateTeamContainer>
-        </Content>
-      )}
+        ) : (
+          <TeamInformationContainer>
+            <TeamInformationWrapper>
+              <TextWithBackground>Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p</TextWithBackground>
+              <InformationGroup>
+                <InformationSubtitle>Owners</InformationSubtitle>
+              </InformationGroup>
+            </TeamInformationWrapper>
+          </TeamInformationContainer>
+        )} */}
+
+        <TeamInformationContainer>
+          <TeamInformationWrapper>
+            <TextWithBackground>Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p</TextWithBackground>
+            <InformationGroup>
+              <InformationSubtitle>Owners</InformationSubtitle>
+              <OwnerGroupContainer>
+                <OwnerInformationContainer>
+                  <OwnerAddress>{truncateAddress('Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p')}</OwnerAddress>
+                </OwnerInformationContainer>
+                <OwnerInformationContainer>
+                  <OwnerAddress>{truncateAddress('Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p')}</OwnerAddress>
+                </OwnerInformationContainer>
+                <OwnerInformationContainer>
+                  <OwnerAddress>{truncateAddress('Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p')}</OwnerAddress>
+                </OwnerInformationContainer>
+              </OwnerGroupContainer>
+            </InformationGroup>
+            <InformationGroup>
+              <InformationSubtitle>Threshold</InformationSubtitle>
+              <ThresholdInformation>2</ThresholdInformation>
+            </InformationGroup>
+            <InformationGroup>
+              <InformationSubtitle>Rewarded</InformationSubtitle>
+              <AddRewardButton>Add new rewarding</AddRewardButton>
+              <ThresholdInformation>2</ThresholdInformation>
+            </InformationGroup>
+          </TeamInformationWrapper>
+        </TeamInformationContainer>
+      </Content>
     </Container>
   )
 }

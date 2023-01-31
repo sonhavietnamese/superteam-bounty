@@ -209,7 +209,17 @@ pub mod flexin {
       Ok(())
   }
 
+  pub fn log_reward(ctx: Context<LogRewards>, be_long_to: String, title: String, external_link: String, winner: String, amount: u16, ) -> Result<()> {
+    let reward = &mut ctx.accounts.reward;
 
+    reward.title = title;
+    reward.external_link = external_link;
+    reward.winner = winner;
+    reward.amount = amount;
+    reward.be_long_to = be_long_to;
+
+    Ok(())
+  }
 }
 
 #[derive(Accounts)]
@@ -285,4 +295,18 @@ pub struct TransferToken<'info> {
     pub to: AccountInfo<'info>,
     // the authority of the from account
     pub from_authority: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct LogRewards<'info> {
+    #[account(
+    init, 
+    payer = signer, 
+    space = std::mem::size_of::<Reward>() + 8)]
+    pub reward: Box<Account<'info, Reward>>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
 }
