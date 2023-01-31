@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { Group, Header } from '../ui/Header.style'
 import ClashButton from '../components/ClashButton'
 import CustomWalletMultiButton from '../components/CustomWalletMultiButton'
@@ -30,6 +30,10 @@ import {
 } from '@solana/spl-token'
 import * as anchor from '@project-serum/anchor'
 import { Flexin, IDL } from '../utils/flexin'
+import { Connection, LAMPORTS_PER_SOL, SystemProgram } from '@solana/web3.js'
+import Squads, { getIxPDA, getMsPDA } from '@sqds/sdk'
+import { useNavigate } from 'react-router-dom'
+import { LOG_REWARD_TAG } from '../utils/constants'
 
 //#region STYLE
 const Content = styled.section`
@@ -46,16 +50,21 @@ const PageTitle = styled.h1``
 const ProposalContainer = styled.div`
   display: flex;
   flex-direction: column;
+  width: 100%;
+  gap: 20px;
 `
 
 const ProposalInputContainer = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 16px;
 `
 
 const NFTBuilderContainer = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 6px;
 `
 const NFTBuilderWrapper = styled.div`
   border-radius: 12px;
@@ -162,6 +171,87 @@ const Amount = styled.span`
   border-radius: 40px;
   /* mix-blend-mode: darken; */
 `
+
+const CreateTeamContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+`
+
+const CreateTeamWrapper = styled.div`
+  padding: 20px 32px;
+  width: 700px;
+  border-radius: 30px;
+  background: #303030;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+`
+
+const InputFieldContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+`
+
+const InputSubTitle = styled.span`
+  font-size: 16px;
+  color: #fff;
+  font-family: 'CD-M';
+  margin-left: 24px;
+`
+
+const InputField = styled.input`
+  border: 1px solid #ffffff;
+  border: none;
+  border-radius: 27px;
+  padding: 12px 24px;
+  font-size: 20px;
+  font-family: 'Circular-M';
+  flex: 1;
+`
+
+const CTAContainer = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  margin-top: 40px;
+`
+
+const TextWithBackground = styled.div`
+  font-size: 32px;
+  line-height: 39px;
+  background: url(/img/notfound-bg.png);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 20px;
+  object-fit: cover;
+  font-family: 'CD-B';
+`
+
+const InputContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+`
+
+const InputTitle = styled.span`
+  font-size: 16px;
+  color: #fff;
+  font-family: 'CD-M';
+  margin-left: 24px;
+`
+
+const Back = styled.span`
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+`
+
 //#endregion
 
 const auth =
@@ -178,18 +268,21 @@ const ipfs = create({
 })
 
 const CreateProposal = () => {
-  const linkRef = useRef<HTMLInputElement>(null)
-  const titleRef = useRef<HTMLInputElement>(null)
-  const winnerRef = useRef<HTMLInputElement>(null)
-  const amountRef = useRef<HTMLInputElement>(null)
+  const [title, setTitle] = useState('')
+  const [link, setLink] = useState('')
+  const [winner, setWinner] = useState('')
+  const [amount, setAmount] = useState(0)
 
   const nftRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
 
   const { connection } = useConnection()
   const { publicKey } = useWallet()
   // @ts-ignore
   const provider = new anchor.AnchorProvider(connection, window.solana, anchor.AnchorProvider.defaultOptions())
   const flexinProgram = new anchor.Program<Flexin>(IDL, FLEXIN_PROGRAM_ID, provider)
+  // @ts-ignore
+  const squads = Squads.devnet(window.solana)
   const nftMintKey = useMemo(() => anchor.web3.Keypair.generate(), [])
 
   const uploadToIPFS = async (blob: string | Blob) => {
@@ -259,86 +352,215 @@ const CreateProposal = () => {
       const imageBlob = await (await fetch(imageBase64)).blob()
       const imageUri = await uploadToIPFS(imageBlob)
       const metadata = generateMetadata(
-        'Certificate',
+        'Bounty Certificate',
         'CERT',
-        'For winner',
+        'For talent Bounty hunter',
         publicKey?.toString()!,
         imageUri ||
           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKr5wT7rfkjkGvNeqgXjBmarC5ZNoZs-H2uMpML8O7Q4F9W-IlUQibBT6IPqyvX45NOgw&usqp=CAU',
+        'https://vn.superteam.fun/bounties',
+        amount,
       )
       const fileMetadata = new Blob([JSON.stringify(metadata)], { type: 'application/json' })
       const metadataUri = await uploadToIPFS(fileMetadata)
       console.log('metadata uri: ', metadataUri)
-      await mintNFT(metadataUri!, 'Random Certificate')
+      await mintNFT(metadataUri!, 'Bounty Certificate')
     } catch (error) {
       console.error('Mint NFT failed!', error)
+    }
+  }
+
+  const transferNFTToIx = async (from: string, destinationAddress: string) => {
+    const nftTokenAccount = getAssociatedTokenAddressSync(nftMintKey.publicKey, new anchor.web3.PublicKey(from), true)
+    console.log('NFT token account:', nftTokenAccount)
+
+    const destination = new anchor.web3.PublicKey(destinationAddress)
+    console.log('destination', destination)
+    console.log('mintKey.publicKey', nftMintKey.publicKey)
+    const destinationATA = getAssociatedTokenAddressSync(nftMintKey.publicKey, destination, true)
+    console.log('destinationATA', destinationATA)
+
+    const mint_tx_2 = new anchor.web3.Transaction().add(
+      createAssociatedTokenAccountInstruction(publicKey!, destinationATA, destination, nftMintKey.publicKey),
+    )
+
+    // @ts-ignore
+    await flexinProgram.provider.sendAndConfirm(mint_tx_2, [])
+    return await flexinProgram.methods
+      .transferToken()
+      .accounts({
+        tokenProgram: TOKEN_PROGRAM_ID,
+        from: nftTokenAccount,
+        fromAuthority: new anchor.web3.PublicKey(from),
+        to: destinationATA,
+      })
+      .instruction()
+  }
+
+  const createTransferAmountAndMintNFTTx = async () => {
+    if (publicKey) {
+      try {
+        await uploadAndMint()
+        const [msPDA] = getMsPDA(publicKey!, squads.multisigProgramId)
+        const authorityPDA = squads.getAuthorityPDA(msPDA, 1)
+        console.log('authorityPDA: ', authorityPDA.toString())
+
+        const moveNFTToMsPDATx = await createBlankTransaction(squads.connection, publicKey!)
+        const moveNFTToMsPDAIx = await transferNFTToIx(publicKey?.toString()!, authorityPDA.toString())
+        const moveFundsToMsPDAIx = await createTestTransferTransaction(
+          publicKey!,
+          authorityPDA,
+          LAMPORTS_PER_SOL * amount,
+        )
+
+        moveNFTToMsPDATx.add(moveNFTToMsPDAIx)
+        moveNFTToMsPDATx.add(moveFundsToMsPDAIx)
+        await provider.sendAndConfirm(moveNFTToMsPDATx)
+
+        const destination = new anchor.web3.PublicKey(winner)
+        const mintNFTIx = await transferNFTToIx(authorityPDA.toString(), destination.toString())
+        const transferIx = await createTestTransferTransaction(authorityPDA, destination)
+
+        let txState = await squads.createTransaction(msPDA, 1)
+        await squads.addInstruction(txState.publicKey, mintNFTIx)
+        await squads.addInstruction(txState.publicKey, transferIx)
+        console.log(txState.publicKey.toString())
+
+        await squads.activateTransaction(txState.publicKey)
+        await squads.approveTransaction(txState.publicKey)
+      } catch (error) {
+        console.error('createTransferAmountAndMintNFTTx:', error)
+      }
     }
   }
 
   return (
     <Container>
       <Header>
-        <div>{/* <SearchIcon /> */}</div>
+        <div>
+          <Back onClick={() => navigate('/dashboard', { replace: true })}>{`Back`}</Back>
+        </div>
         <LogoText fontsize='24px'>FLexin</LogoText>
         <Group>
           <CustomWalletMultiButton />
         </Group>
       </Header>
       <Content>
-        <PageTitle>Create Proposal</PageTitle>
-
-        <ProposalContainer>
-          <span>Bounty Information</span>
-          <ProposalInputContainer>
-            <ClashInput key={0} ref={linkRef} title='Link' placeholder='ex: Winner of the ABC' />
-            <ClashInput key={1} ref={titleRef} title='Title' placeholder='ex: Winner of the ABC' />
-            <ClashInput key={2} ref={winnerRef} title='Winner' placeholder='ex: Winner of the ABC' />
-            <ClashInput
-              key={3}
-              ref={amountRef}
-              type='number'
-              title='Amount (SOL)'
-              placeholder='ex: Winner of the ABC'
-            />
-          </ProposalInputContainer>
-          <input type='range' min={1} max={3}></input>
-          <NFTBuilderContainer>
-            <NFTBuilderWrapper>
-              <NFTBuilder ref={nftRef}>
-                <NFTBackground src={NFTBg2} />
-                <NFTHeader>
-                  <HeaderText fontFamily='HB'>FLexin</HeaderText>
-                  <HeaderText fontFamily='Circular-M'>BOUNTY</HeaderText>
-                  <HeaderText fontFamily='Circular-M'>SuperteamVN</HeaderText>
-                </NFTHeader>
-                <NFTTitleContainer>
-                  <NFTTitle>Tool for Superteam to log grant & bounty proof-of-work on-chain</NFTTitle>
-                </NFTTitleContainer>
-                <WinnerContainer>
-                  <SubtitleContainer>
-                    <StarIcon />
-                    <Subtitle>WINNER</Subtitle>
-                  </SubtitleContainer>
-                  <Winner>{truncateAddress('3vcQRPwNfoQ4m7LHNusbs9KxLWY2bhqDsHf6NTCuT3sb')}</Winner>
-                </WinnerContainer>
-                <AmountContainer>
-                  <SubtitleContainer>
-                    <StarIcon />
-                    <Subtitle>AMOUNT</Subtitle>
-                  </SubtitleContainer>
-                  <Amount>{formatAmount(3000)} SOL</Amount>
-                </AmountContainer>
-              </NFTBuilder>
-            </NFTBuilderWrapper>
-          </NFTBuilderContainer>
-        </ProposalContainer>
+        <CreateTeamContainer>
+          <CreateTeamWrapper>
+            <TextWithBackground>New Rewarding</TextWithBackground>
+            <ProposalContainer>
+              <ProposalInputContainer>
+                <InputContainer>
+                  <InputTitle>Link</InputTitle>
+                  <InputFieldContainer>
+                    <InputField
+                      value={link}
+                      type='text'
+                      onChange={(e) => setLink(e.target.value)}
+                      placeholder='ex: https://vn.superteam.fun/bounties/random-bounty'
+                    />
+                  </InputFieldContainer>
+                </InputContainer>
+                <InputContainer>
+                  <InputTitle>Title</InputTitle>
+                  <InputFieldContainer>
+                    <InputField
+                      value={title}
+                      type='text'
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder='ex: Random Bounty'
+                    />
+                  </InputFieldContainer>
+                </InputContainer>
+                <InputContainer>
+                  <InputTitle>Winner</InputTitle>
+                  <InputFieldContainer>
+                    <InputField
+                      value={winner}
+                      type='text'
+                      onChange={(e) => setWinner(e.target.value)}
+                      placeholder='ex: Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p'
+                    />
+                  </InputFieldContainer>
+                </InputContainer>
+                <InputContainer>
+                  <InputTitle>Amount (SOL)</InputTitle>
+                  <InputFieldContainer>
+                    <InputField
+                      value={amount}
+                      type='number'
+                      min={0}
+                      onChange={(e) => setAmount(e.target.valueAsNumber)}
+                      placeholder='ex: 1000'
+                    />
+                  </InputFieldContainer>
+                </InputContainer>
+              </ProposalInputContainer>
+              <NFTBuilderContainer>
+                <div style={{ width: '100%' }}>
+                  <InputSubTitle>Certificate NFT</InputSubTitle>
+                </div>
+                <NFTBuilderWrapper>
+                  <NFTBuilder ref={nftRef}>
+                    <NFTBackground src={NFTBg1} />
+                    <NFTHeader>
+                      <HeaderText fontFamily='HB'>FLexin</HeaderText>
+                      <HeaderText fontFamily='Circular-M'>BOUNTY</HeaderText>
+                      <HeaderText fontFamily='Circular-M'>SuperteamVN</HeaderText>
+                    </NFTHeader>
+                    <NFTTitleContainer>
+                      <NFTTitle>{title}</NFTTitle>
+                    </NFTTitleContainer>
+                    <WinnerContainer>
+                      <SubtitleContainer>
+                        <StarIcon />
+                        <Subtitle>WINNER</Subtitle>
+                      </SubtitleContainer>
+                      <Winner> {winner.length > 12 ? truncateAddress(winner) : ''}</Winner>
+                    </WinnerContainer>
+                    <AmountContainer>
+                      <SubtitleContainer>
+                        <StarIcon />
+                        <Subtitle>AMOUNT</Subtitle>
+                      </SubtitleContainer>
+                      <Amount>{amount && amount === 0 ? 0 : formatAmount(amount)} SOL</Amount>
+                    </AmountContainer>
+                  </NFTBuilder>
+                </NFTBuilderWrapper>
+              </NFTBuilderContainer>
+            </ProposalContainer>
+            <CTAContainer>
+              <ClashButton text='Create' onClick={createTransferAmountAndMintNFTTx} />
+            </CTAContainer>
+          </CreateTeamWrapper>
+        </CreateTeamContainer>
       </Content>
-      {/* <ClashButton text='Upload to IPFS' onClick={onCapture} /> */}
-      <ClashButton text='Mint' onClick={uploadAndMint} />
-
-      {/* <FullPageLoading /> */}
     </Container>
   )
+}
+
+export const createTestTransferTransaction = async (
+  authority: anchor.web3.PublicKey,
+  recipient: anchor.web3.PublicKey,
+  amount = 500000000,
+) => {
+  return anchor.web3.SystemProgram.transfer({
+    fromPubkey: authority,
+    lamports: amount,
+    toPubkey: recipient,
+  })
+}
+
+export const createBlankTransaction = async (connection: Connection, feePayer: anchor.web3.PublicKey) => {
+  const { blockhash } = await connection.getLatestBlockhash()
+  const lastValidBlockHeight = await connection.getBlockHeight()
+
+  return new anchor.web3.Transaction({
+    blockhash,
+    lastValidBlockHeight,
+    feePayer,
+  })
 }
 
 export default CreateProposal

@@ -12,6 +12,7 @@ import CreateProposal from './pages/CreateProposal'
 import Dashboard from './pages/Dashboard'
 import Landing from './pages/Landing'
 import ProfileV2 from './pages/ProfileV2'
+import Reward from './pages/Reward'
 
 export const WalletConnectable = ({ children }: { children: ReactNode }) => {
   const network = WalletAdapterNetwork.Devnet
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
   {
     path: '/dashboard',
     element: <Dashboard />,
+  },
+  {
+    path: '/reward',
+    element: <Reward />,
   },
 ])
 

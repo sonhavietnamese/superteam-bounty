@@ -209,7 +209,14 @@ pub mod flexin {
       Ok(())
   }
 
-  pub fn log_reward(ctx: Context<LogRewards>, be_long_to: String, title: String, external_link: String, winner: String, amount: u16, ) -> Result<()> {
+  pub fn log_reward(
+    ctx: Context<LogRewards>,
+    title: String,
+    external_link: String,
+    winner: String,
+    amount: u16,
+    be_long_to: String,
+) -> Result<()> {
     let reward = &mut ctx.accounts.reward;
 
     reward.title = title;
@@ -219,7 +226,7 @@ pub mod flexin {
     reward.be_long_to = be_long_to;
 
     Ok(())
-  }
+}
 }
 
 #[derive(Accounts)]
@@ -302,6 +309,8 @@ pub struct LogRewards<'info> {
     #[account(
     init, 
     payer = signer, 
+        seeds=[LOG_REWARD_TAG, signer.key().as_ref()], 
+      bump, 
     space = std::mem::size_of::<Reward>() + 8)]
     pub reward: Box<Account<'info, Reward>>,
 

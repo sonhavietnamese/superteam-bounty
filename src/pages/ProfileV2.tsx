@@ -1,3 +1,4 @@
+import { getParsedNftAccountsByOwner, getSolanaMetadataAddress } from '@nfteyez/sol-rayz'
 import * as anchor from '@project-serum/anchor'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey, SystemProgram } from '@solana/web3.js'
@@ -9,6 +10,10 @@ import { ReactComponent as EditProfileIcon } from '../assets/edit-profile.svg'
 import { ReactComponent as SearchIcon } from '../assets/search-icon.svg'
 import Card from '../components/Card'
 import ClashButton from '../components/ClashButton'
+import ClashInput from '../components/ClashInput'
+import CustomWalletMultiButton from '../components/CustomWalletMultiButton'
+import FullPageLoading from '../components/FullPageLoading'
+import ProfileNotFound from '../components/ProfileNotFound'
 import {
   DiscordHandler,
   GithubHandler,
@@ -17,12 +22,6 @@ import {
   TelegramHandler,
   TwitterHandler,
 } from '../components/SocialMediaHandlerV2'
-import { formatAmount, formatUsername } from '../utils'
-
-import ClashInput from '../components/ClashInput'
-import CustomWalletMultiButton from '../components/CustomWalletMultiButton'
-import FullPageLoading from '../components/FullPageLoading'
-import ProfileNotFound from '../components/ProfileNotFound'
 import { Container, LogoText } from '../ui/Common.style'
 import { Group, Header } from '../ui/Header.style'
 import {
@@ -32,9 +31,11 @@ import {
   ModalInputContainer,
   ModalTitle,
 } from '../ui/Modal.style'
+import { formatAmount, formatUsername } from '../utils'
 import { EMPTY_STRING, PROFILE_TAG } from '../utils/constants'
 import { Flexin, IDL } from '../utils/flexin'
 import idl from '../utils/flexin.json'
+import axios, { isCancel, AxiosError } from 'axios'
 
 window.Buffer = Buffer
 
@@ -96,6 +97,10 @@ const SocialMedia = styled.div`
   display: flex;
   gap: 40px;
   z-index: 2;
+  background: #0000004b;
+  padding: 8px 20px;
+  border-radius: 40px;
+  backdrop-filter: blur(10px);
 `
 
 const ProfileTitle = styled.span`
@@ -121,7 +126,7 @@ const TotalBountyContainer = styled.div`
 
 const SubTitle = styled.span`
   font-size: 24px;
-  color: #c3c3c3;
+  color: #e7e7e7;
 `
 
 const TotalBountyAmount = styled.span`
@@ -174,6 +179,8 @@ const ProfileV2 = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | undefined>()
   const [isOwner, setIsOwner] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [certificateMetadata, setCertificateMetadata] = useState<any[]>()
+  const [totalBounty, setTotalBounty] = useState(0)
 
   const updateProfile = async () => {
     if (publicKey) {
@@ -224,11 +231,39 @@ const ProfileV2 = () => {
         const program = await loadProgram()
 
         const allProfiles = await program.account.profile.all()
-        const filteredProfile = allProfiles.map((profile) => {
+        console.log(allProfiles)
+
+        const filteredProfile = allProfiles.filter((profile) => {
           if (profile.account.username === username) return profile.account
         })
 
-        setUserProfile(filteredProfile[0])
+        console.log(filteredProfile[0])
+
+        const nftArray = await getParsedNftAccountsByOwner({
+          publicAddress: filteredProfile[0]?.account.walletAddress!,
+          connection,
+        })
+        let arr = []
+        let amount = 0
+        for (let i = 0; i < nftArray.length; i++) {
+          console.log(nftArray[i].data.uri)
+          let val = await (await axios.get(nftArray[i].data.uri)).data
+          if (
+            val.attributes &&
+            val.attributes.length >= 2 &&
+            val.attributes[1].value &&
+            val.attributes[1].value === 'SuperteamVN'
+          ) {
+            console.log(val.attributes[0].value.split(' ')[0], parseFloat(val.attributes[0].value.split(' ')[0]))
+
+            amount += parseFloat(val.attributes[0].value.split(' ')[0])
+            arr.push(val)
+          }
+        }
+        console.log(arr)
+        setTotalBounty(amount)
+        setUserProfile(filteredProfile[0].account)
+        setCertificateMetadata(arr)
       } catch (error) {
         console.error(error)
         // setIsLoading(false)
@@ -258,12 +293,10 @@ const ProfileV2 = () => {
 
           const user = await program.account.profile.fetch(userPDA)
           console.log(userProfile)
+          console.log(publicKey.toString())
+          console.log(userProfile.walletAddress === publicKey.toString())
 
-          setIsOwner(
-            user &&
-              user.walletAddress === publicKey.toString() &&
-              userProfile.walletAddress === userProfile.walletAddress,
-          )
+          setIsOwner(user && userProfile.walletAddress === publicKey.toString())
         } catch (error) {
           setIsOwner(false)
           setIsLoading(false)
@@ -326,20 +359,31 @@ const ProfileV2 = () => {
             {Array(15)
               .fill(0)
               .map((_, index) => (
-                <ProfileTitle key={index}>{profileTitle}</ProfileTitle>
+                <ProfileTitle key={index}>
+                  {certificateMetadata && certificateMetadata?.length === 0
+                    ? 'NEWBIE'
+                    : certificateMetadata?.length < 3
+                    ? 'JUNIOR HUNTER'
+                    : 'BOUNTY HUNTER'}
+                </ProfileTitle>
               ))}
           </Marquee>
           <TotalBountyContainer>
             <SubTitle>Total bounty</SubTitle>
-            <TotalBountyAmount>{formatAmount(1000000)} USDC</TotalBountyAmount>
+            <TotalBountyAmount>{formatAmount(totalBounty)} SOL</TotalBountyAmount>
           </TotalBountyContainer>
           <BadgeInformationContainer>
             <SubTitle>Badges</SubTitle>
             <div className='card-grid'>
-              <Card key={1} />
-              <Card key={2} />
-              <Card key={3} />
-              <Card key={4} />
+              {certificateMetadata && certificateMetadata.length > 0 ? (
+                <>
+                  {certificateMetadata.map((cert, i) => (
+                    <Card key={i} imageUri={cert.image} />
+                  ))}
+                </>
+              ) : (
+                <></>
+              )}
             </div>
           </BadgeInformationContainer>
         </Content>

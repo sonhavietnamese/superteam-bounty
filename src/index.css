@@ -556,8 +556,8 @@ button.card__rotator {
 
 */
 
-.card[data-rarity='rare holo vstar'][data-supertype='pokémon'] .card__shine,
-.card[data-rarity='rare holo vstar'][data-supertype='pokémon'] .card__shine:after {
+.card[data-rarity='rare holo vstar'][data-supertype='bountycert'] .card__shine,
+.card[data-rarity='rare holo vstar'][data-supertype='bountycert'] .card__shine:after {
   --space: 5%;
   --angle: 133deg;
   --imgsize: 18% 15%;
@@ -596,7 +596,7 @@ button.card__rotator {
   filter: brightness(calc((var(--hyp) * 0.5) + 0.5)) contrast(2) saturate(0.75);
 }
 
-.card[data-rarity='rare holo vstar'][data-supertype='pokémon'] .card__shine:after {
+.card[data-rarity='rare holo vstar'][data-supertype='bountycert'] .card__shine:after {
   content: '';
 
   background-size: var(--imgsize), 200% 400%, 195% 100%, 200% 100%;
@@ -612,8 +612,8 @@ button.card__rotator {
 
 */
 
-.card[data-rarity='rare ultra'][data-supertype='pokémon'] .card__shine,
-.card[data-rarity='rare ultra'][data-supertype='pokémon'] .card__shine:after {
+.card[data-rarity='rare ultra'][data-supertype='bountycert'] .card__shine,
+.card[data-rarity='rare ultra'][data-supertype='bountycert'] .card__shine:after {
   --space: 5%;
   --angle: 133deg;
   --imgsize: 50% 42%;
@@ -652,7 +652,7 @@ button.card__rotator {
   filter: brightness(calc((var(--hyp) * 0.3) + 0.5)) contrast(2) saturate(1.5);
 }
 
-.card[data-rarity='rare ultra'][data-supertype='pokémon'] .card__shine:after {
+.card[data-rarity='rare ultra'][data-supertype='bountycert'] .card__shine:after {
   content: '';
 
   background-size: var(--imgsize), 200% 400%, 195% 100%, 200% 100%;

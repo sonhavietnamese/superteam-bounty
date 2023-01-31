@@ -1,18 +1,18 @@
 import * as anchor from '@project-serum/anchor'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
+import Squads, { getMsPDA } from '@sqds/sdk'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
-import ClashInput from '../components/ClashInput'
-import CustomWalletMultiButton from '../components/CustomWalletMultiButton'
-import { Container, LogoText } from '../ui/Common.style'
-import { Group, Header } from '../ui/Header.style'
 import { ReactComponent as RemoveInputIcon } from '../assets/x-icon.svg'
 import ClashButton from '../components/ClashButton'
-import Squads, { getIxPDA, getMsPDA } from '@sqds/sdk'
-import { publicKey } from '@project-serum/anchor/dist/cjs/utils'
+import ClashInput from '../components/ClashInput'
+import CustomWalletMultiButton from '../components/CustomWalletMultiButton'
 import FullPageLoading from '../components/FullPageLoading'
+import { Container, LogoText } from '../ui/Common.style'
+import { Group, Header } from '../ui/Header.style'
 import { truncateAddress } from '../utils'
-
+import { SquadsMpl } from '../utils/squads_mpl'
 //#region STYLE
 const Content = styled.section`
   overflow: hidden;
@@ -282,6 +282,58 @@ const AddRewardButton = styled.button`
       0px 1.95556px 5.7037px rgba(57, 40, 135, 0.153111), 0px 0.444444px 2.75463px rgba(57, 40, 135, 0.0938889);
   }
 `
+
+const RewardHistoryContainer = styled.div`
+  margin-top: 8px;
+  width: 100%;
+  height: 600px;
+  overflow: auto;
+`
+
+const RewardHistory = styled.div`
+  background: #202020;
+  border-radius: 12px;
+  padding: 16px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+  position: relative;
+  transition: all 0.25s ease;
+  cursor: pointer;
+
+  :hover {
+    background: #484848;
+  }
+`
+
+const RewardTitle = styled.span`
+  font-size: 20px;
+  line-height: 25px;
+  color: #fff;
+  font-family: 'CD-M';
+  margin-bottom: 6px;
+`
+
+const RewardInformation = styled.span`
+  font-size: 14px;
+  line-height: 18px;
+  color: #757575;
+  font-family: 'Circular-M';
+`
+
+const RewardStatus = styled.span<{ color: string }>`
+  font-family: 'Circular-M';
+  color: ${(props) => props.color};
+  font-size: 12px;
+  line-height: 15px;
+  border: 2px solid ${(props) => props.color};
+  border-radius: 6px;
+  position: absolute;
+  padding: 4px 8px;
+  top: 8px;
+  right: 8px;
+`
 //#endregion
 
 interface DynamicInput {
@@ -303,10 +355,16 @@ const Dashboard = () => {
   const [teamAvailable, setTeamAvailable] = useState(false)
   const [loading, setLoading] = useState(true)
   const [teamMultisign, setTeamMultisign] = useState<TeamMultisign>()
+  const [transactions, setTransactions] = useState<any[]>()
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
 
+  const { publicKey } = useWallet()
+  const { connection } = useConnection()
+  // @ts-ignore
+  const provider = new anchor.AnchorProvider(connection, window.solana, { commitment: 'confirmed' })
   // @ts-ignore
   const squads = Squads.devnet(window.solana)
-  const { publicKey } = useWallet()
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>, index: number) => {
     const { name, value } = e.target
@@ -344,30 +402,39 @@ const Dashboard = () => {
     }
   }
 
-  // useEffect(() => {
-  //   const getTeamMultisig = async () => {
-  //     setLoading(true)
-  //     try {
-  //       const [msPDA] = getMsPDA(publicKey!, squads.multisigProgramId)
-  //       const multisigAccount = await squads.getMultisig(msPDA)
-  //       console.log(multisigAccount)
-  //       setTeamMultisign(multisigAccount)
-  //       setTeamAvailable(false)
-  //     } catch (error) {
-  //       setTeamAvailable(true)
-  //       setLoading(false)
-  //     } finally {
-  //       setLoading(false)
-  //     }
-  //   }
+  useEffect(() => {
+    const getTeamMultisig = async () => {
+      setLoading(true)
+      try {
+        const [msPDA] = getMsPDA(publicKey!, squads.multisigProgramId)
+        const multisigAccount = await squads.getMultisig(msPDA)
+        console.log(multisigAccount)
 
-  //   getTeamMultisig()
-  // }, [publicKey])
+        const squadsProgram = (await anchor.Program.at(
+          'SMPLecH534NA9acpos4G6x7uf3LWbCAwZQE9e8ZekMu',
+          provider,
+        )) as anchor.Program<SquadsMpl>
+
+        const all = await squadsProgram.account.msTransaction.all([
+          { memcmp: { offset: 8, bytes: publicKey?.toBase58()! } },
+        ])
+        setTransactions(all)
+        setTeamMultisign(multisigAccount)
+        setTeamAvailable(false)
+      } catch (error) {
+        setTeamAvailable(true)
+        setLoading(false)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    getTeamMultisig()
+  }, [publicKey])
 
   return (
     <Container>
-      {/* {loading ? <FullPageLoading /> : <></>} */}
-
+      {loading ? <FullPageLoading /> : <></>}
       <Header>
         <div>{/* <SearchIcon /> */} </div>
         <LogoText fontsize='24px'>FLexin</LogoText>
@@ -375,8 +442,8 @@ const Dashboard = () => {
           <CustomWalletMultiButton />
         </Group>
       </Header>
-      <Content>
-        {/* {teamAvailable && !teamMultisign ? (
+      {!loading && teamAvailable && !teamMultisign ? (
+        <Content>
           <CreateTeamContainer>
             <CreateTeamBackground />
             <CreateTeamWrapper>
@@ -440,58 +507,69 @@ const Dashboard = () => {
               </CTAContainer>
             </CreateTeamWrapper>
           </CreateTeamContainer>
-        ) : (
+        </Content>
+      ) : (
+        <Content>
           <TeamInformationContainer>
             <TeamInformationWrapper>
-              <TextWithBackground>Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p</TextWithBackground>
+              <TextWithBackground>{teamMultisign?.publicKey.toString()}</TextWithBackground>
               <InformationGroup>
                 <InformationSubtitle>Owners</InformationSubtitle>
+                <OwnerGroupContainer>
+                  {teamMultisign?.keys.map((address) => (
+                    <OwnerInformationContainer key={address.toString()}>
+                      <OwnerAddress>{truncateAddress(address.toString())}</OwnerAddress>
+                    </OwnerInformationContainer>
+                  ))}
+                </OwnerGroupContainer>
+              </InformationGroup>
+              <InformationGroup>
+                <InformationSubtitle>Threshold</InformationSubtitle>
+                <ThresholdInformation>{teamMultisign?.threshold}</ThresholdInformation>
+              </InformationGroup>
+              <InformationGroup>
+                <InformationSubtitle>Rewarded</InformationSubtitle>
+                <AddRewardButton onClick={() => navigate('/create-proposal')}>+ New rewarding</AddRewardButton>
+                <RewardHistoryContainer>
+                  {transactions && transactions?.length > 0 ? (
+                    <>
+                      {transactions?.map((transaction) => (
+                        <RewardHistory
+                          key={transaction.publicKey.toString()}
+                          onClick={() => {
+                            navigate(`/reward?address=${transaction.publicKey.toString()}`)
+                            // setSearchParams({ address: transaction.publicKey.toString() })
+                          }}>
+                          <RewardTitle>{truncateAddress(transaction.publicKey.toString())}</RewardTitle>
+
+                          <RewardStatus
+                            color={
+                              Object.keys(transaction.account.status)[0] === 'executed'
+                                ? '#4BC657'
+                                : Object.keys(transaction.account.status)[0] === 'executeReady'
+                                ? '#C6AB4B'
+                                : '#4B7CC6'
+                            }>
+                            {Object.keys(transaction.account.status)[0] === 'executed'
+                              ? 'Executed'
+                              : Object.keys(transaction.account.status)[0] === 'executeReady'
+                              ? 'Ready for reward'
+                              : 'Draft'}
+                          </RewardStatus>
+                        </RewardHistory>
+                      ))}
+                    </>
+                  ) : (
+                    <></>
+                  )}
+                </RewardHistoryContainer>
               </InformationGroup>
             </TeamInformationWrapper>
           </TeamInformationContainer>
-        )} */}
-
-        <TeamInformationContainer>
-          <TeamInformationWrapper>
-            <TextWithBackground>Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p</TextWithBackground>
-            <InformationGroup>
-              <InformationSubtitle>Owners</InformationSubtitle>
-              <OwnerGroupContainer>
-                <OwnerInformationContainer>
-                  <OwnerAddress>{truncateAddress('Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p')}</OwnerAddress>
-                </OwnerInformationContainer>
-                <OwnerInformationContainer>
-                  <OwnerAddress>{truncateAddress('Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p')}</OwnerAddress>
-                </OwnerInformationContainer>
-                <OwnerInformationContainer>
-                  <OwnerAddress>{truncateAddress('Hb2HDX6tnRfw5j442npy58Z2GBzJA58Nz7ipouWGT63p')}</OwnerAddress>
-                </OwnerInformationContainer>
-              </OwnerGroupContainer>
-            </InformationGroup>
-            <InformationGroup>
-              <InformationSubtitle>Threshold</InformationSubtitle>
-              <ThresholdInformation>2</ThresholdInformation>
-            </InformationGroup>
-            <InformationGroup>
-              <InformationSubtitle>Rewarded</InformationSubtitle>
-              <AddRewardButton>Add new rewarding</AddRewardButton>
-              <ThresholdInformation>2</ThresholdInformation>
-            </InformationGroup>
-          </TeamInformationWrapper>
-        </TeamInformationContainer>
-      </Content>
+        </Content>
+      )}
     </Container>
   )
-}
-
-{
-  /* <ClashInput
-                  key={3}
-                  ref={amountRef}
-                  type='number'
-                  title='Amount (SOL)'
-                  placeholder='ex: Winner of the ABC'
-                /> */
 }
 
 export default Dashboard

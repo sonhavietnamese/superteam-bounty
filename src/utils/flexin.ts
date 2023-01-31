@@ -12,6 +12,11 @@ export type Flexin = {
       type: 'string'
       value: '"EMPTY_STRING"'
     },
+    {
+      name: 'LOG_REWARD_TAG'
+      type: 'bytes'
+      value: '[76, 79, 71, 95, 82, 69, 87, 65, 82, 68]'
+    },
   ]
   instructions: [
     {
@@ -207,7 +212,7 @@ export type Flexin = {
         {
           name: 'reward'
           isMut: true
-          isSigner: true
+          isSigner: false
         },
         {
           name: 'signer'
@@ -221,10 +226,6 @@ export type Flexin = {
         },
       ]
       args: [
-        {
-          name: 'beLongTo'
-          type: 'string'
-        },
         {
           name: 'title'
           type: 'string'
@@ -240,6 +241,10 @@ export type Flexin = {
         {
           name: 'amount'
           type: 'u16'
+        },
+        {
+          name: 'beLongTo'
+          type: 'string'
         },
       ]
     },
@@ -325,6 +330,11 @@ export const IDL: Flexin = {
       name: 'EMPTY_STRING',
       type: 'string',
       value: '"EMPTY_STRING"',
+    },
+    {
+      name: 'LOG_REWARD_TAG',
+      type: 'bytes',
+      value: '[76, 79, 71, 95, 82, 69, 87, 65, 82, 68]',
     },
   ],
   instructions: [
@@ -521,7 +531,7 @@ export const IDL: Flexin = {
         {
           name: 'reward',
           isMut: true,
-          isSigner: true,
+          isSigner: false,
         },
         {
           name: 'signer',
@@ -535,10 +545,6 @@ export const IDL: Flexin = {
         },
       ],
       args: [
-        {
-          name: 'beLongTo',
-          type: 'string',
-        },
         {
           name: 'title',
           type: 'string',
@@ -554,6 +560,10 @@ export const IDL: Flexin = {
         {
           name: 'amount',
           type: 'u16',
+        },
+        {
+          name: 'beLongTo',
+          type: 'string',
         },
       ],
     },

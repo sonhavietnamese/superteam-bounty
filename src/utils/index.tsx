@@ -17,24 +17,25 @@ const formatAmount = (number: number) => {
 const round = (num: number, fix = 3) => parseFloat(num.toFixed(fix))
 const clamp = (num: number, min = -20, max = 20) => Math.min(Math.max(num, min), max)
 
-const generateMetadata = (name: string, symbol: string, description: string, creator: string, image: string) => {
+const generateMetadata = (
+  name: string,
+  symbol: string,
+  description: string,
+  creator: string,
+  image: string,
+  external_url: string,
+  amount: number,
+) => {
   return {
     name,
     symbol,
     description,
     seller_fee_basis_points: 0,
-    external_url: 'https://sonha.space',
+    external_url,
     background_color: '000000',
     attributes: [
-      { trait_type: 'Background', value: 'Red' },
-      { trait_type: 'Fur / Skin', value: 'Red / Blue' },
-      { trait_type: 'Head', value: "Musketeer's Hat" },
-      { trait_type: 'Mouth', value: 'Soda' },
-      { trait_type: 'Teeth', value: 'No Traits' },
-      { trait_type: 'Clothing', value: 'Black T-Shirt' },
-      { trait_type: 'Eyewear', value: 'Shutter Shades' },
-      { display_type: 'number', trait_type: 'generation', value: 1 },
-      { display_type: 'number', trait_type: 'sequence', value: 236 },
+      { trait_type: 'Amount', value: `${amount} SOL` },
+      { trait_type: 'Issuer', value: 'SuperteamVN' },
     ],
     properties: {
       category: 'image',

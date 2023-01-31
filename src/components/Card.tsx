@@ -3,10 +3,10 @@ import { clamp, round } from '../utils'
 import Glare from './Glare'
 import Shine from './Shine'
 
-const Card = () => {
+const Card = ({ imageUri }: { imageUri: string }) => {
   let number = 53
   let subtypes = 'basic v'
-  let supertype = 'pokémon'
+  let supertype = 'bountycert'
   let rarity = 'rare holo v'
   let gallery = true
 
@@ -69,11 +69,7 @@ const Card = () => {
           aria-label='Expand the Pokemon Card; {name}.'
           tabIndex={0}>
           <div className='card__front'>
-            <img
-              src='https://images.pokemontcg.io/swsh9tg/TG16_hires.png'
-              alt='Front design of the {name} Pokemon Card, with the stats and info around the edge'
-              loading='lazy'
-            />
+            <img src={imageUri} alt='Bounty Certificate' loading='lazy' width={400} />
             <Shine subtypes={subtypes} supertype={supertype} />
             <Glare subtypes={subtypes} rarity={rarity} />
           </div>

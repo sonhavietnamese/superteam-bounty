@@ -16,7 +16,7 @@ const SwitcherListItem = styled.li<{ active: boolean }>`
   font-family: 'Circular-B';
   font-size: 16px;
   cursor: pointer;
-  color: ${(props) => (props.active ? 'black' : 'grey')};
+  color: ${(props) => (props.active ? 'white' : 'grey')};
 `
 
 const RoleSwitcher = () => {

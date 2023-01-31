@@ -11,6 +11,11 @@
       "name": "EMPTY_STRING",
       "type": "string",
       "value": "\"EMPTY_STRING\""
+    },
+    {
+      "name": "LOG_REWARD_TAG",
+      "type": "bytes",
+      "value": "[76, 79, 71, 95, 82, 69, 87, 65, 82, 68]"
     }
   ],
   "instructions": [
@@ -207,7 +212,7 @@
         {
           "name": "reward",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "signer",
@@ -221,10 +226,6 @@
         }
       ],
       "args": [
-        {
-          "name": "beLongTo",
-          "type": "string"
-        },
         {
           "name": "title",
           "type": "string"
@@ -240,6 +241,10 @@
         {
           "name": "amount",
           "type": "u16"
+        },
+        {
+          "name": "beLongTo",
+          "type": "string"
         }
       ]
     }

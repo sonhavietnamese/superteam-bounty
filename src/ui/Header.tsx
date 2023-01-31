@@ -15,7 +15,8 @@ const HeaderContainer = styled.div`
 
 const LogoText = styled.span`
   font-size: 32px;
-  font-family: 'Circular-B';
+  font-family: 'HB';
+  color: #fff;
   /* mix-blend-mode: difference; */
 `
 
@@ -38,6 +39,7 @@ const ListItem = styled.li`
   cursor: pointer;
   opacity: 0.5;
   transition: all 0.25s ease;
+  color: #d2d2d2;
 
   :hover {
     opacity: 1;
@@ -56,10 +58,9 @@ const Header = () => {
   return (
     <HeaderContainer>
       <LeftSide>
-        <LogoText>flexin</LogoText>
+        <LogoText>FLexin</LogoText>
         <NavigationContainer>
           <ListContainer>
-            <ListItem>SuperteamVN</ListItem>
             <ListItem>SuperteamVN</ListItem>
           </ListContainer>
         </NavigationContainer>
